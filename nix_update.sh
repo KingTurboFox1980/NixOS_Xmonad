@@ -107,7 +107,7 @@ case $choice in
     ;;
   13)
     echo "📝 Editing this menu..."
-    kitty sudo vim "$script_path"
+    kitty sudo nvim "$script_path"
     ;;
   14)
     echo "🚪 Exiting..."
