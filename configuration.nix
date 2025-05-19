@@ -1,7 +1,3 @@
-# May 17, 2025 # 
-
-# https://github.com/KingTurboFox1980/xmonad.git # 
-
 { config, lib, pkgs, ... }:
 
 let
@@ -134,7 +130,9 @@ in
 
     # XMonad & Dependencies
     xmonad-with-packages 
+    haskellPackages.xmonad
     haskellPackages.xmonad-contrib 
+    pkgs.haskellPackages.xmonad-utils
     dmenu 
     rofi 
     xdotool 
