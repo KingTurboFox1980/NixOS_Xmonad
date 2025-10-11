@@ -1,0 +1,23 @@
+Config { font            = "Orbitron Black 12"
+       , additionalFonts = [ "DejaVu Sans Mono italic 13"
+                           , "Inter 13"
+                           , "Font Awesome 6 Free Solid 13"
+                           , "Font Awesome 6 Brands 13"
+                           , "Feather 13"
+                           ]
+       , bgColor = "#282C34"
+       , fgColor = "#BBC2CF"
+       , position = Static { xpos = 0 , ypos = 0, width = 1920, height = 22 }
+       , lowerOnStart = True
+       , hideOnStart = False
+       , allDesktops = True
+       , persistent = True
+       , alpha    = 150  -- default: 255
+       , iconRoot = "$HOME/.xmonad/xpm/"  -- default: "."
+       , commands = [
+                      Run Date "<fn=2></fn>🗓️ %A, %B %d | 🕰️ %I:%M:%S %p" "date" 10
+                    , Run UnsafeStdinReader
+                    ]
+       , sepChar = "%"
+       , alignSep = "}{"
+       , template = " %UnsafeStdinReader%}{<fc=#666666></fc><fc=#9580FF>%date%</fc>"

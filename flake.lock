@@ -1,0 +1,44 @@
+{
+  "nodes": {
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1759994382,
+        "narHash": "sha256-wSK+3UkalDZRVHGCRikZ//CyZUJWDJkBDTQX1+G77Ow=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "5da4a26309e796daa7ffca72df93dbe53b8164c7",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-25.05",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "picom-jonaburg-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1724918329,
+        "narHash": "sha256-UKqMHUP6X3exG7obhuRPgXWPmwBeaGaqNYNtcBcimNQ=",
+        "owner": "jonaburg",
+        "repo": "picom",
+        "rev": "65ad706ab8e1d1a8f302624039431950f6d4fb89",
+        "type": "github"
+      },
+      "original": {
+        "owner": "jonaburg",
+        "repo": "picom",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "nixpkgs": "nixpkgs",
+        "picom-jonaburg-src": "picom-jonaburg-src"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
