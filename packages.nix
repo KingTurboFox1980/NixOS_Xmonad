@@ -6,10 +6,12 @@
     # General Applications
     p3x-onenote
     whatsapp-for-linux
+    whatsie
     
     # Browsers
     firefox
-    vivaldi # vivaldi is now in the official nixpkgs, so override isn't needed
+    vivaldi 
+    microsoft-edge
 
     # Networking
     networkmanager
@@ -45,6 +47,8 @@
     pavucontrol
     pywal
     vlc
+    totem
+    mpv
     xwallpaper
     blueberry
     nomacs
@@ -55,11 +59,17 @@
     (pkgs.linuxPackages.cpupower or pkgs.cpupower) # Correct way to reference this on different kernels
     power-profiles-daemon
     mission-center
+    cpu-x
     bitwarden-desktop
     bleachbit
     arandr
     conky
+    kdiskmark
+    gnome-weather
     lm_sensors
+    localsend
+    flameshot
+    gthumb
     gtk3
     pkgs.gnome-settings-daemon
     gnome-calendar
@@ -83,6 +93,7 @@
     libnotify
     solaar
     sxhkd
+    speedtest
     pamixer
     unzip
     xorg.xev
@@ -105,48 +116,19 @@
     # Notifications
     dunst
 
+    # ZSH
+    zsh-autosuggestions
+    zsh-syntax-highlighting
+    zsh-fast-syntax-highlighting
+    zsh-autocomplete
+    
     # Other Utilities
     copyq
+    libsForQt5.okular
     qbittorrent
     vdhcoapp
     wget
     yt-dlp
     galculator
-  ];
-
-  # Fonts
-  fonts.packages = with pkgs; [
-    corefonts
-    vistafonts
-    inconsolata
-    terminus_font
-    proggyfonts
-    dejavu_fonts
-    font-awesome
-    ubuntu_font_family
-    source-code-pro
-    source-sans-pro
-    source-serif-pro
-    noto-fonts-emoji
-    openmoji-color
-    twemoji-color-font
-    udev-gothic-nf
-    texlivePackages.inconsolata-nerd-font
-    noto-fonts
-    noto-fonts-color-emoji
-    noto-fonts-cjk-sans
-    material-icons
-    maple-mono.NF
-    orbitron
-    fira-code
-    fira-code-symbols
-    jetbrains-mono
-    victor-mono
-    nerd-fonts.fira-code
-    nerd-fonts.droid-sans-mono
-    nerd-fonts.jetbrains-mono
-    nerd-fonts.meslo-lg
-    nerd-fonts.hack
-    nerd-fonts.fantasque-sans-mono
   ];
 }

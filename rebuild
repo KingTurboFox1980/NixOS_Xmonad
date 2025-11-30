@@ -22,7 +22,7 @@ using sudo nano to edit the file and copy from the backup
 
 sudo nix flake init
 
-then, use the nix_update.sh script to rebuil like normal
+then, use the nix_update.sh script to rebuild like normal
 
 By running the cachix use crazazy command before you rebuild, you ensure that your Nix installation 
 is already aware of and configured to use the crazazy binary cache. When nixos-rebuild switch then starts 

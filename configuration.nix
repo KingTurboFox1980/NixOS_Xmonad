@@ -1,16 +1,16 @@
-{ config, pkgs, ... }:
-
+{ config, pkgs, lib, specialArgs, ... }: 
 {
   imports = [
     ./hardware-configuration.nix
+    ./fonts.nix
+    ./maintenance.nix
     ./packages.nix
-    ./services.nix
+    ./services.nix 
+    ./starfish.nix
     ./update.nix
     ./video-accel.nix
-    ./maintenance.nix
-    ./vm.nix
-    ./starfish.nix
-    # ./xmonad.nix  # Optional: enable for declarative XMonad
+    ./vm.nix    
+    # ./xmonad.nix
   ];
 
   # 🖥️ System Identity
@@ -21,8 +21,8 @@
   # 🧬 Bootloader & Kernel
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-  boot.kernelParams = [ "mitigations=off" ];
-  boot.kernel.sysctl."vm.dirty_ratio" = 20;
+  boot.kernelParams = [ "mitigations=off" ]; # Performance optimization
+  boot.kernel.sysctl."vm.dirty_ratio" = 20;  # Good for desktop responsiveness
 
   # 🧠 Firmware & Microcode
   hardware.cpu.intel.updateMicrocode = true;
@@ -32,6 +32,9 @@
   # 🎮 Graphics Stack
   hardware.graphics.enable = true;
   hardware.graphics.enable32Bit = true;
+
+  # 🔊 AUDIO
+  security.rtkit.enable = true;
 
   # 💾 Swap & Temp
   zramSwap.enable = true;
@@ -60,18 +63,20 @@
       "wheel" "networkmanager" "libvirtd"
       "audio" "video" "input" "kvm"
     ];
-    packages = [ ]; # Add user-specific packages here
+    packages = [ ];
+    
+    # Set Zsh as the default shell for the user
+    shell = pkgs.zsh;
   };
 
   # 🔒 Security
-  security.polkit.enable = true;
   security.sudo.enable = true;
   security.sudo.extraConfig = ''
     Defaults env_reset,pwfeedback
   '';
 
   # ⚙️ Input & Desktop Services
-  programs.xfconf.enable = true;
+  programs.xfconf.enable = true; 
   services.libinput.enable = true;
 
   # 🖥️ Display Manager & X Server
@@ -86,30 +91,19 @@
       haskellPackages.utf8-string
     ];
   };
+  
+  # ⌨️ SHELL CONFIGURATION
+  # Zsh is enabled here, but all custom initialization is removed.
+  programs.zsh.enable = true; 
 
-  # 📂 Thunar File Manager
-  programs.thunar = {
-    enable = true;
-    plugins = with pkgs.xfce; [
-      thunar-archive-plugin
-      thunar-volman
-    ];
-  };
-
-  # 🌐 XDG Portal (for Flatpak, sandboxed apps)
-  xdg.portal = {
-    enable = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
-    config.common.default = "*"; # Fixes portal fallback warnings
-  };
-
-  # 🔋 Power Management
-  services.power-profiles-daemon.enable = true;
-  services.upower.enable = true; # Fixes xfce4-power-manager warning
-  powerManagement.cpuFreqGovernor = "performance";
-
-  # 📦 Nixpkgs Config (only used if pkgs not passed via flake)
-  # nixpkgs.config.allowUnfree = true;
+  # ⌨️ CORE PACKAGES
+  # Only core utilities and Alacritty remain. Zsh is included for clarity.
+  environment.systemPackages = with pkgs; [
+    zsh
+    alacritty
+    lm_sensors               
+    coreutils                
+  ];
 
   # 🧭 System Version
   system.stateVersion = "25.05";

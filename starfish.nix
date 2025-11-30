@@ -1,13 +1,37 @@
-{
-  ...
-}:
+{ pkgs, ... }:
 
 {
   programs = {
     starship = {
       enable = true;
       settings = {
-        add_newline = false;
+        # General Settings
+        add_newline = false; # Keep the prompt compact on a single line
+        # Define the order and look of the prompt modules
+        format = ''
+          [](color_3)
+          $username
+          [](color_3)
+          $directory
+          $git_branch
+          $git_state
+          $git_status
+          $memory_usage
+          $shlvl
+          $nix_shell
+          $time
+          [](color_bg)
+          \n$character
+        '';
+
+        # Custom Prompt Character
+        character = {
+          success_symbol = "[>](bold green)";
+          error_symbol = "[x](bold red)";
+          # The prompt will show ">" in green on success and "x" in red on error
+        };
+
+        # Custom Symbols (Your excellent list)
         buf = {
           symbol = " ";
         };
@@ -16,6 +40,8 @@
         };
         directory = {
           read_only = " 󰌾";
+          # Use different color to visually separate current path
+          style = "bold white";
         };
         docker_context = {
           symbol = " ";
@@ -25,6 +51,7 @@
         };
         git_branch = {
           symbol = " ";
+          style = "bold purple";
         };
         golang = {
           symbol = " ";
@@ -75,4 +102,3 @@
     };
   };
 }
-
