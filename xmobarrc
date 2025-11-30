@@ -1,23 +1,46 @@
-Config { font            = "Orbitron Black 12"
-       , additionalFonts = [ "DejaVu Sans Mono italic 13"
-                           , "Inter 13"
-                           , "Font Awesome 6 Free Solid 13"
-                           , "Font Awesome 6 Brands 13"
-                           , "Feather 13"
-                           ]
-       , bgColor = "#282C34"
-       , fgColor = "#BBC2CF"
-       , position = Static { xpos = 0 , ypos = 0, width = 1920, height = 22 }
-       , lowerOnStart = True
-       , hideOnStart = False
-       , allDesktops = True
-       , persistent = True
-       , alpha    = 150  -- default: 255
-       , iconRoot = "$HOME/.xmonad/xpm/"  -- default: "."
-       , commands = [
-                      Run Date "<fn=2></fn>🗓️ %A, %B %d | 🕰️ %I:%M:%S %p" "date" 10
-                    , Run UnsafeStdinReader
-                    ]
-       , sepChar = "%"
-       , alignSep = "}{"
-       , template = " %UnsafeStdinReader%}{<fc=#666666></fc><fc=#9580FF>%date%</fc>"
+Config {
+    -- 1. Primary Font (fn=0) for all text and workspace names
+      font            = "Fira Code Bold 12"
+    
+    -- 2. Additional Fonts
+    -- fn=1: MesloLGS NF (The powerful Nerd Font for all icons/glyphs)
+    -- fn=2: Inter (Good general-purpose fallback)
+    , additionalFonts = [ "MesloLGS NF 13"
+                        , "Inter 13"
+                        ]
+                        
+    -- Colors and Position (Kept as requested)
+    , bgColor = "#282C34"
+    , fgColor = "#BBC2CF"
+    , position = Static { xpos = 0 , ypos = 0, width = 1920, height = 22 }
+    , lowerOnStart = True
+    , hideOnStart = False
+    , allDesktops = True
+    , persistent = True
+    , alpha    = 255
+    , iconRoot = "$HOME/.xmonad/xpm/"
+    
+    -- Commands
+    , commands = [
+        -- Time monitor: Uses <fn=1> (MesloLGS NF) for the clock icon (U+F017)
+        -- NOTE: Using the MesloLGS NF font (fn=1) for the icon is more reliable than an emoji (🕰️).
+        Run Date "<fn=1>\xf017</fn> %I:%M:%S %p |" "time" 10,
+        
+        -- Date monitor with action: Uses <fn=1> (MesloLGS NF) for the calendar icon (U+F073)
+        Run Date "<action=`gnome-calendar` button=1><fn=1>\xf073</fn> %A, %B %d</action>" "date" 100, -- Reduced update rate for date
+        
+        -- MyButton definition (Icon path kept as is)
+        Run Com "echo" 
+          ["<action=`~/.config/scripts/shortcut_key_scripts.sh` button=1><icon=/home/j3ll0/.config/xmobar/haskell_20.xpm/></action>"] 
+          "myButton" 
+          36000,
+          
+        Run UnsafeStdinReader
+        ]
+        
+    -- Template
+    , sepChar = "%"
+    , alignSep = "}{"
+    -- Template structure: |<time> <workspace/window>}{<date>
+    , template = "%myButton%|<fc=aquamarine3>%time%</fc> %UnsafeStdinReader%}{<fc=#9580FF>%date%</fc> "
+}
