@@ -26,7 +26,7 @@ conky.config = {
     minimum_height = 200,
     alignment = 'top_right',                   -- Align to the top right
     gap_x = 10,                                -- Moves 10px to the LEFT from the right edge
-    gap_y = 55,                                -- Adjusted for clean placement below a polybar (use 55 to match your system conky)
+    gap_y = 32,                                -- Adjusted for clean placement below a polybar (use 55 to match your system conky)
 
     -- 🔤 Fonts & Text
     use_xft = true,
@@ -35,57 +35,62 @@ conky.config = {
     draw_shades = true,
 
     -- 🎨 Colours (Consolidated)
-    default_color = '#ff0000',                 -- Red (Default)
-    color1 = '#6272a4',                        -- Grayish Blue (Separator)
-    color2 = '#9580ff',                        -- Soft Purple (General Hint Actions)
-    color4 = '#ffff80',                        -- Pale Yellow (Window/Layout Actions)
-    color5 = '#50fa7b',                        -- Neon Green (Vim/Editor Actions)
-    color7 = '#F1544B',                        -- Firebrick/Red (Critical/Reboot Actions)
-    color8 = '#FFA726',                        -- Orange (Rofi/D-Menu Actions)
+    default_color = 'FF0000',    -- Red
+    color1 = '#05FFA1',          -- Neon Green
+    color2 = '#BD93F9',          -- Light Purple
+    color3 = '#9580FF',          -- Dark Purple
+    color4 = '#FFFF80',          -- Yellow
+    color5 = '#9580FF',          -- Pink
+    color6 = '#AA0000',          -- Deep Red
+    color7 = '#04D9FF',          -- Cyan
+	color8 = '#6F9EB2',          -- Cyan
+	color9 = '#01BAB4',          -- Green
+	color10 = '#FFA726',         -- Orange
+	color11 = '#F1544B',         -- Firebrick
 };
 
 conky.text = [[
-${font Orbitron:Black:size=10}${color7}Numpad *${color}${alignr}${color2}Xmonad Keyhints${color}
-${color1}${hr}${color}
+${font Orbitron:Black:size=10}${color7}Numpad *${color}${alignr}${color7}Xmonad Keyhints${color}
+${color2}${hr}${color}
 ${color7}(S) + SHIFT + R${color}${alignr}${color2}RECOMPILE${color}
 ${color7}Numpad + ${color}${alignr}${color2}Change Wallpaper${color}
+${color7}F9${color}${alignr}${color2}Monitor Warmth${color}
 ${color7}(S) + Numpad + ${color}${alignr}${color2}D-Menu Wallpaper${color}
 ${color7}(S) + Escape${color}${alignr}${color2}Mission Center${color}
-${color7}Numpad /${color}${alignr}${color2}Reload Polybar${color}
-${color1}${hr}${color}
-
-${color4}Numpad .${color}${alignr}${color2}Reset Stack${color}
-${color4}(S) + SPACE${color}${alignr}${color2}Switch Screen Layout${color}
-${color4}SHIFT + CTRL + Up / Down${color}${alignr}${color2}Rotate Stack${color}
-${color4}SHIFT + CTRL + Left / Right${color}${alignr}${color2}Shrink / Expand${color}
-${color4}(S) CTRL + Left / Right${color}${alignr}${color2}Add / Remove Master${color}
-${color4}CTRL + ALT + Left / Right${color}${alignr}${color2}Switch Workspace${color}
-${color1}${hr}${color}
-
-${color7}(S) + C${color}${alignr}${color2}Code${color}
+${color7}(S) + P${color}${alignr}${color2}Reload Polybar${color}
+${color7}CTRL + ALT + P${color}${alignr}${color2}Toggle Picom${color}
+${color2}${hr}${color}
 ${color7}Keypad Calculator${color}${alignr}${color2}Calculator${color}
 ${color7}Keypad Camera${color}${alignr}${color2}Flameshot Screenshot${color}
-${color7}(S) + E${color}${alignr}${color2}Evolution${color}
+${color7}(S) + B${color}${alignr}${color2}Betterbird E-Mail${color}
+${color7}(S) + C${color}${alignr}${color2}Code${color}
 ${color7}(S) + O${color}${alignr}${color2}One Note${color}
 ${color7}(S) + R${color}${alignr}${color2}R-Clone Browser${color}
 ${color7}(S) + T${color}${alignr}${color2}File Manager${color}
 ${color7}(S) + V${color}${alignr}${color2}QEMU Virt-Manager${color}
 ${color7}(S) + W${color}${alignr}${color2}Vivaldi Browser${color}
 ${color7}(S) SHIFT + W${color}${alignr}${color2}Microsoft Edge${color}
-${color1}${hr}${color}
-
+${color2}${hr}${color}
+${color8}CTRL + SPACE${color}${alignr}${color8}Switch Screen Layout${color}
+${color4}Numpad .${color}${alignr}${color4}Reset Stack${color}
+${color4}SHIFT + CTRL + Up / Down${color}${alignr}${color2}Rotate Stack${color}
+${color4}Keypad Divide${color}${alignr}${color2}Increase Window Gaps${color}
+${color4}SHIFT + Keypad Divide${color}${alignr}${color2}Decrease Window Gaps${color}
+${color4}(S) + Keypad Divide${color}${alignr}${color2}Reset Window Gaps${color}
+${color4}SHIFT + CTRL + Left / Right${color}${alignr}${color2}Shrink / Expand Split${color}
+${color4}(S) + CTRL + Left / Right${color}${alignr}${color2}Add / Remove Master${color}
+${color4}CTRL + ALT + Left / Right${color}${alignr}${color2}Switch Workspace${color}
+${color4}(S) + TAB${color}${alignr}${color2}Forward Workspace${color}
+${color4}(S) + SHIFT + TAB${color}${alignr}${color2}Backward Workspace${color}
+${color2}${hr}${color}
 ${color8}(S) + D${color}${alignr}${color2}D-Menu${color}
-${color8}(S) + P${color}${alignr}${color2}ROFI (B)${color}
-${color8}(S) + Z${color}${alignr}${color2}ROFI (S)${color}
+${color8}ALT + SPACE${color}${alignr}${color2}ROFI (B)${color}
+${color8}(S) + SPACE${color}${alignr}${color2}ROFI (S)${color}
 ${color8}CTRL + ALT + R${color}${alignr}${color2}ROFI Theme${color}
-${color8}F9${color}${alignr}${color2}Monitor Warmth${color}
-${color1}${hr}${color}
-
-${color1}(S) + S${color}${alignr}${color2}D-Menu Web-Search${color}
-${color1}Numpad -${color}${alignr}${color2}Xmonad D-Menu${color}
-${color1}CTRL + ALT + O${color}${alignr}${color2}Picom Toggle${color}
-${color1}${hr}${color}
-
+${color8}(S) + S${color}${alignr}${color2}D-Menu Web-Search${color}
+${color8}Numpad -${color}${alignr}${color2}Xmonad D-Menu${color}
+${color8}(S) + Numpad -${color}${alignr}${color2}NixOS Maintenance${color}
+${color2}${hr}${color}
 ${color5}i | r | Esc${color}${alignr}${color2}Insert | Replace | Escape${color}
 ${color5}:w | :wq | :q!${color}${alignr}${color2}Write | Write/Quit | Quit NO Write${color}
 ${color5}cw${color}${alignr}${color2}Delete Word and Insert${color}

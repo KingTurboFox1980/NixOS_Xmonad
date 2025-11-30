@@ -7,21 +7,31 @@ function run {
   fi
 }
 
+# 🔑 CRITICAL FIX: Keyring Environment Setup (MUST RUN FIRST)
+# This uses 'nix eval' to find the gnome-keyring-daemon and then uses 'eval'
+# to execute the shell commands it generates. This correctly sets environment 
+# variables (like GNOME_KEYRING_PID and SSH_AUTH_SOCK) in the current shell, 
+# allowing Evolution and other applications to find the running keyring service.
+KEYRING_DAEMON_PATH=$(nix eval --raw nixpkgs#gnome-keyring)/bin/gnome-keyring-daemon
+eval "$(${KEYRING_DAEMON_PATH} --start --components=secrets,ssh,pkcs11)"
+# -----------------------------------------------------
+
+
 # --- Cleanup ---
 # Ensure a clean slate for Conky, which is prone to issues on startup
 killall conky
 
 # --- Core services and managers (that rely on D-Bus) ---
 
-# xfce4-power-manager is listed twice, keeping one check and one run for clarity
+# xfce4-power-manager ensures battery management is active
 if ! pgrep -x xfce4-power-manager > /dev/null; then
     xfce4-power-manager &
 fi
 
 run copyq
-run sxhkd -c $HOME/.config/sxhkd/sxhkdrc # Assuming sxhkd is intended to run
 
 # 🧠 Polkit agent (fixed path via nix eval)
+# This agent handles the graphical prompt for unlocking the Keyring
 run $(nix eval --raw nixpkgs#polkit_gnome)/libexec/polkit-gnome-authentication-agent-1
 
 # 🖱️ Cursor
@@ -49,10 +59,9 @@ run redshift -P -l 43.8:-79.3 -O 4000
 conky -c ~/.config/xmonad/scripts/system-overview.conkyrc &
 
 # 2. Wait a few seconds for the X server/WM to settle and the first Conky to draw.
-sleep 5
+sleep 2
 
 # 3. Launch the second Conky (Key Hints)
-# NOTE: Using AUR-Allinone.conkyrc based on your script. Ensure this is the correct path!
 conky -c ~/.config/xmonad/scripts/AUR-Allinone.conkyrc &
 
 # -----------------------------------------------------
