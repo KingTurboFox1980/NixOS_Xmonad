@@ -2,6 +2,7 @@
 {
   imports = [
     ./hardware-configuration.nix
+    ./cachix.nix
     ./fonts.nix
     ./maintenance.nix
     ./packages.nix
@@ -37,13 +38,8 @@
   security.rtkit.enable = true;
 
   # 💾 Swap & Temp
+  boot.tmp.useTmpfs = false;
   zramSwap.enable = true;
-
-  fileSystems."/tmp" = {
-    device = "tmpfs";
-    fsType = "tmpfs";
-    options = [ "size=2G" "mode=1777" ];
-  };
 
   fileSystems."/mnt/data" = {
     device = "/dev/disk/by-uuid/0618d31f-4e05-4fc0-8db1-9d62bebab4d0";
@@ -54,7 +50,7 @@
 
   # 🧪 Nix Settings
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
-
+  
   # 👤 User Configuration
   users.users.j3ll0 = {
     isNormalUser = true;
@@ -64,8 +60,6 @@
       "audio" "video" "input" "kvm"
     ];
     packages = [ ];
-    
-    # Set Zsh as the default shell for the user
     shell = pkgs.zsh;
   };
 
@@ -73,7 +67,7 @@
   security.sudo.enable = true;
   security.sudo.extraConfig = ''
     Defaults env_reset,pwfeedback
-  '';
+  '' ;
 
   # ⚙️ Input & Desktop Services
   programs.xfconf.enable = true; 
@@ -93,16 +87,14 @@
   };
   
   # ⌨️ SHELL CONFIGURATION
-  # Zsh is enabled here, but all custom initialization is removed.
   programs.zsh.enable = true; 
 
   # ⌨️ CORE PACKAGES
-  # Only core utilities and Alacritty remain. Zsh is included for clarity.
   environment.systemPackages = with pkgs; [
     zsh
     alacritty
-    lm_sensors               
-    coreutils                
+    lm_sensors                
+    coreutils                 
   ];
 
   # 🧭 System Version

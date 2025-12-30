@@ -4,7 +4,7 @@
   # Enable dconf for proper graphical integration with virt-manager
   programs.dconf.enable = true;
 
-  # Install necessary packages.
+  # Install necessary packages
   environment.systemPackages = with pkgs; [
     # Core GUI and interaction tools
     virt-manager
@@ -12,41 +12,22 @@
     spice-gtk
     adwaita-icon-theme
 
+    # Thunar and plugins (per your requirements)
+    xfce.thunar
+    xfce.thunar-archive-plugin
+    xfce.thunar-volman
+
     # Core QEMU, KVM, and Networking dependencies
-    qemu               # This provides all necessary qemu system binaries
-    dnsmasq            # For libvirtd's default NAT network (DHCP/DNS)
-    bridge-utils       # For advanced network setups
-    iptables           # For network rule management
+    qemu
+    dnsmasq
+    bridge-utils
+    iptables
   ];
 
-  # Manage the core virtualisation services.
-  virtualisation = {
-    libvirtd = {
-      enable = true;
-      # Configure libvirtd to automatically manage networks and VMs
-      onBoot = "start";
-      onShutdown = "shutdown";
-
-      qemu = {
-        # Enable Secure Boot (OVMF) and TPM support.
-        ovmf = {
-          enable = true;
-          packages = [
-            (pkgs.OVMFFull.override {
-              secureBoot = true;
-              tpmSupport = true;
-            })
-          ];
-        };
-        swtpm.enable = true;
-
-        # KVM is enabled implicitly when libvirtd is enabled.
-      };
-    };
-    # Enable Spice for clipboard sharing and graphical quality enhancements
-    spiceUSBRedirection.enable = true;
+  # Manage the core virtualisation services
+  virtualisation.libvirtd = {
+    enable = true;
+    onBoot = "start";
+    onShutdown = "shutdown";
   };
-
-  # Spice daemon for guest interaction
-  services.spice-vdagentd.enable = true;
 }

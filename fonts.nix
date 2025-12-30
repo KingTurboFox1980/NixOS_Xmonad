@@ -8,7 +8,7 @@
     dejavu_fonts
     noto-fonts
     noto-fonts-cjk-sans 
-    ubuntu_font_family
+    ubuntu-classic
     source-code-pro
     source-sans-pro
     source-serif-pro
@@ -23,7 +23,6 @@
     font-awesome_6 
     material-icons
     noto-fonts-color-emoji
-    noto-fonts-emoji
     openmoji-color
     twemoji-color-font
 
@@ -42,6 +41,6 @@
 
     # Windows Compatibility Fonts (Only if needed)
     corefonts
-    vistafonts
+    vista-fonts
   ];
 }

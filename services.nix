@@ -12,6 +12,7 @@
     # 💾 Disk/Volume Management (Crucial for Thunar-volman)
     udisks2.enable = true;
     gvfs.enable = true;
+    tumbler.enable = true;
     fstrim.enable = true;
 
     # 🔋 Power/Battery Management
@@ -29,17 +30,27 @@
       wireplumber.enable = true;
     };
 
-    # 🔑 Secrets Management (Essential for saving network share passwords, etc.)
+    # 🔑 Secrets Management
     gnome.gnome-keyring.enable = true;
 
     # 🖨️ Printing
     printing.enable = true;
+
+    # ⏱️ Time Synchronization
+    timesyncd.enable = true;
   };
 
-  # 🖥️ XDG Portals (Ensures correct file dialogs/screensharing in Flatpak apps)
+  # 🖥️ XDG Portals (MANDATORY FOR 25.05 / UNSTABLE)
+  # This section prevents the massive 'webkitgtk' builds by explicitly
+  # defining which portal backend to use.
   xdg.portal = {
     enable = true;
     extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+    config = {
+      common = {
+        default = [ "gtk" ];
+      };
+    };
   };
 
   # 👮 System Policy Management
@@ -51,14 +62,6 @@
     libvirtd.enable = true;
     spiceUSBRedirection.enable = true;
   };
-
-
-  # =========================
-  # 🛡️ SECURITY AND SYSTEM UTILITIES
-  # =========================
-
-  # ⏱️ Time Synchronization
-  services.timesyncd.enable = true;
 
   # 🔥 Firewall
   networking.firewall.enable = true;
@@ -72,15 +75,15 @@
     # 🔑 Secrets and Keyring Utilities
     libsecret
     gnome-keyring
-    seahorse # GUI for managing keys and passwords
+    seahorse
 
-    # 📁 Thunar and associated utilities
+    # 📁 Thunar and associated utilities (As requested)
     xfce.thunar
     xfce.thunar-archive-plugin
-    xfce.thunar-volman # Handles automatic mounting of removable media
+    xfce.thunar-volman # Essential for your removable media mounting
 
-    # 🌐 GVFS Backend for Network Shares
+    # 🌐 Network Share Support
     gvfs
-    samba # Enables access to Samba/Windows shares (smb:// protocol)
+    samba
   ];
 }

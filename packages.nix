@@ -5,7 +5,7 @@
   environment.systemPackages = with pkgs; [
     # General Applications
     p3x-onenote
-    whatsapp-for-linux
+    wasistlos
     whatsie
     
     # Browsers
@@ -15,7 +15,7 @@
 
     # Networking
     networkmanager
-    nm-tray # Re-added, if you still want a tray applet for NetworkManager, though `networkmanagerapplet` is also available.
+    networkmanagerapplet
 
     # Development Tools
     cachix
@@ -69,7 +69,6 @@
     lm_sensors
     localsend
     flameshot
-    gthumb
     gtk3
     pkgs.gnome-settings-daemon
     gnome-calendar
@@ -124,7 +123,6 @@
     
     # Other Utilities
     copyq
-    libsForQt5.okular
     qbittorrent
     vdhcoapp
     wget
