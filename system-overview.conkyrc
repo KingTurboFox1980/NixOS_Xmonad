@@ -64,11 +64,7 @@ ${color7}Keypad Calculator${color}${alignr}${color2}Calculator${color}
 ${color7}Keypad Camera${color}${alignr}${color2}Flameshot Screenshot${color}
 ${color7}(S) + B${color}${alignr}${color2}Betterbird E-Mail${color}
 ${color7}(S) + C${color}${alignr}${color2}Code${color}
-${color7}(S) + O${color}${alignr}${color2}One Note${color}
 ${color7}(S) + R${color}${alignr}${color2}R-Clone Browser${color}
-${color7}(S) + T${color}${alignr}${color2}File Manager${color}
-${color7}(S) + V${color}${alignr}${color2}QEMU Virt-Manager${color}
-${color7}(S) + W${color}${alignr}${color2}Vivaldi Browser${color}
 ${color7}(S) SHIFT + W${color}${alignr}${color2}Microsoft Edge${color}
 ${color2}${hr}${color}
 ${color8}CTRL + SPACE${color}${alignr}${color8}Switch Screen Layout${color}
@@ -106,4 +102,11 @@ ${color5}Space + e ${color}${alignr}${color2}File Manager${color}
 ${color5}: Number ${color}${alignr}${color2}Jump To Line #${color}
 
 ${color5}gg / G ${color}${alignr}${color2}Jump to Top / Bottom of file${color}
+${color2}${hr}${color}
+${color7}(S) + RETURN${color}${alignr}${color2}Kitty  (SCRATCHPAD)${color}
+${color7}(S) + E${color}${alignr}${color2}Thunar (SCRATCHPAD)${color}
+${color7}(S) + O${color}${alignr}${color2}One Note (SCRATCHPAD)${color}
+${color7}(S) + T${color}${alignr}${color2}qBittorrent (SCRATCHPAD)${color}
+${color7}(S) + V${color}${alignr}${color2}QEMU Virt-Manager (SCRATCHPAD)${color}
+${color7}(S) + W${color}${alignr}${color2}Vivaldi Browser (SCRATCHPAD)${color}
 ]]

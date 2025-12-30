@@ -1,5 +1,9 @@
+{-# OPTIONS_GHC -Wall #-}
+{-# OPTIONS_GHC -O2 #-}
+
+--------------------------
 -- | XMonad Configuration
-------------------------------------------------------------------------
+--------------------------
 
 -- System & Base
 import System.IO
@@ -16,6 +20,12 @@ import XMonad.Actions.SpawnOn
 import XMonad.Actions.CycleWS              -- Required for toggleWS, prevWS, shiftToNext/Prev
 import XMonad.Actions.DwmPromote
 import XMonad.Actions.OnScreen
+import XMonad.Actions.GridSelect
+import XMonad.Actions.Promote
+import XMonad.Actions.RotSlaves
+import XMonad.Actions.WithAll
+import XMonad.Actions.CopyWindow
+import XMonad.Actions.MouseResize
 
 -- Hooks
 import XMonad.Hooks.DynamicLog (dynamicLogWithPP, wrap, xmobarPP, xmobarColor, shorten, PP(..))
@@ -26,6 +36,8 @@ import XMonad.Hooks.UrgencyHook
 import XMonad.Hooks.EwmhDesktops (ewmh, ewmhFullscreen, fullscreenEventHook)
 import XMonad.ManageHook
 import XMonad.Config.Desktop (desktopConfig) -- For myBaseConfig
+import XMonad.Hooks.WorkspaceHistory
+
 
 -- Layouts
 import XMonad.Layout.Spacing
@@ -42,6 +54,9 @@ import XMonad.Layout.MultiToggle.Instances (StdTransformers(NBFULL, NOBORDERS)) 
 import XMonad.Layout.CenteredMaster(centerMaster)
 import XMonad.Layout.CircleEx (CircleEx)
 import XMonad.Layout.NoBorders -- FIX: Imports 'noBorders' and 'smartBorders'
+import XMonad.Layout.LimitWindows
+import XMonad.Layout.SubLayouts
+
 
 -- Utilities
 import XMonad.Util.EZConfig (additionalKeys, additionalMouseBindings)
@@ -49,6 +64,7 @@ import XMonad.Util.Hacks (windowedFullscreenFixEventHook, javaHack, trayerAboveX
 import XMonad.Util.SpawnOnce
 import XMonad.Util.Run(spawnPipe, hPutStrLn)
 import XMonad.Util.ClickableWorkspaces (clickablePP)
+import XMonad.Util.NamedScratchpad
 
 ------------------------------------------------------------------------
 -- Configuration Variables
@@ -195,44 +211,86 @@ myManageHook = composeAll . concat $
     -- Shift rules for OTHER
     my10Shifts = ["discord"]
 
+myScratchpads :: [NamedScratchpad]
+myScratchpads =
+  [ NS "terminal"
+      "kitty --class scratchpad"
+      (className =? "scratchpad")
+      (customFloating $ W.RationalRect 0.1 0.1 0.8 0.8)
+
+  , NS "mixer"
+      "pavucontrol"
+      (className =? "Pavucontrol")
+      (customFloating $ W.RationalRect 0.2 0.15 0.6 0.7)
+
+  , NS "notes"
+      "kitty --class notes -e nvim ~/notes.md"
+      (className =? "notes")
+      (customFloating $ W.RationalRect 0.15 0.15 0.7 0.7)
+    
+  , NS "virt"
+    "virt-manager --no-fork"
+    (className =? ".virt-manager-wrapped")
+    (customFloating $ W.RationalRect 0.05 0.05 0.9 0.9)
+
+  , NS "vivaldi"
+     "vivaldi --class=vivaldi-scratchpad"
+     (className =? "vivaldi-scratchpad")
+     (customFloating $ W.RationalRect 0.025 0.025 0.95 0.95)
+
+  , NS "onenote"
+     "p3x-onenote"
+     (className =? "p3x-onenote")
+     (customFloating $ W.RationalRect 0.05 0.05 0.9 0.9)
+
+  , NS "thunar"
+     "thunar --class=thunar-scratchpad"
+     (className =? "thunar-scratchpad")
+     (customFloating $ W.RationalRect 0.1 0.1 0.8 0.8)
+
+  , NS "qbittorrent"
+     "qbittorrent"
+     (className =? "qBittorrent")
+     (customFloating $ W.RationalRect 0.1 0.1 0.8 0.8)
+
+  ]
+
 ------------------------------------------------------------------------
 -- Layouts
 ------------------------------------------------------------------------
 
-tiled :: Tall Window
-tiled = Tall nmaster delta tiled_ratio
-  where
-    nmaster = 1 -- number of windows in the master pane
-    delta = 3/100 -- percentage of screen to increment by when resizing panes
-    tiled_ratio = 1/2 -- initial ratio of master pane to rest
+-- Base Tall layout parameters
+nmaster :: Int
+nmaster = 1
 
--- ** Inner Gaps (Spacing between windows) set to 8 pixels **
-myLayout = spacingRaw True (Border 0 8 8 8) True (Border 8 8 8 8) True $
-             avoidStruts $
-             mkToggle (NBFULL ?? NOBORDERS ?? EOT) $
-             tiled |||
-             Mirror tiled |||
-             spiral (6/7) |||
-             ThreeColMid 1 (3/100) (1/2) |||
-             Full |||
-             Tall 1 (3/100) (1/2) |||
-             Mirror (Tall 1 (3/100) (1/2)) |||
-             multiCol [1] 1 0.01 (-0.5) |||
-             ThreeCol nmaster delta (1/3) |||
-             simpleTabbed |||
-             noBorders (fullscreenFull Full)
-  where
-      -- Default tiling algorithm partitions the screen into two panes
-      tiled   = Tall nmaster delta ratio
+delta :: Rational
+delta = 3/100
 
-      -- Number of windows in the master pane
-      nmaster = 1
+ratio :: Rational
+ratio = 1/2
 
-      -- Proportion of screen occupied by master pane
-      ratio   = 1/2
+-- Primary tiling layout
+tiled :: Tall a
+tiled = Tall nmaster delta ratio
 
-      -- Percent of screen to increment by when resizing panes
-      delta   = 3/100
+-- Layout hook
+myLayout =
+  spacingRaw
+    True                 -- enable screen edge gaps
+    (Border 0 8 8 8)     -- screen edge gaps (top right bottom left)
+    True
+    (Border 8 8 8 8)     -- window gaps
+    True
+  $ avoidStruts
+  $ mkToggle (NBFULL ?? NOBORDERS ?? EOT)
+  $
+       tiled
+   ||| Mirror tiled
+   ||| spiral (6/7)
+   ||| ThreeColMid 1 delta ratio
+   ||| multiCol [1] 1 0.01 (-0.5)
+   ||| simpleTabbed
+   ||| Full
 
 ------------------------------------------------------------------------
 -- Log Hook
@@ -319,32 +377,29 @@ shiftToScreen sc = do
 -- Key Bindings Configuration (minor fix to workspace switching)
 myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
     -- SUPER + FUNCTION KEYS
-    [ ((modMask, xK_e), spawn $ "atom" )
-    , ((modMask .|. shiftMask, xK_f), sendMessage $ Toggle NBFULL)
+    [ ((modMask .|. shiftMask, xK_f), sendMessage $ Toggle NBFULL)
     , ((modMask, xK_q), kill )
     , ((modMask, xK_r), spawn $ "rclone-browser" )
     , ((modMask, xK_d), spawn $ "exec ~/.config/scripts/dmenu.sh" )
     , ((0, xK_F10), spawn "polybar-msg cmd toggle" )
-    , ((modMask, xK_x), spawn $ "archlinux-logout" )
-    , ((modMask, xK_F1), spawn $ "vivaldi-stable" )
+    --, ((modMask, xK_F1), spawn $ "vivaldi-stable" )
     , ((modMask, xK_F7), spawn $ "virt-manager" )
-    , ((modMask, xK_F8), spawn $ "thunar" )
+    --, ((modMask, xK_F8), spawn $ "thunar" )
     , ((mod1Mask, xK_space), spawn $ "rofi -theme-str 'window {width: 100%;height: 100%;}' -show drun" )
     , ((controlMask, xK_space), sendMessage NextLayout)
     , ((0, xF86XK_Calculator), spawn $ "galculator" )
-    , ((modMask, xK_o), spawn $ "p3x-onenote" )
+    -- , ((modMask, xK_o), spawn $ "p3x-onenote" )
     , ((modMask, xK_c), spawn $ "code" )
     -- , ((modMask, xK_e), spawn $ "exec evolution" ) -- commented out 'e' to avoid conflict with 'atom'
     , ((modMask, xK_b), spawn $ "exec flatpak run eu.betterbird.Betterbird" )
     , ((modMask, xK_g), spawn $ "geany" )
-    , ((modMask, xK_v), spawn $ "virt-manager" )
-    , ((modMask, xK_w), spawn $ "vivaldi" )
+    --, ((modMask, xK_w), spawn $ "vivaldi" )
     , ((modMask, xK_space), spawn $ "exec ~/.config/rofi/launchers/type-6/launcher.sh" )
     , ((modMask .|. shiftMask , xK_w ), spawn $ "flatpak run com.microsoft.Edge" )
     , ((modMask, xK_x), spawn $ "~/.config/scripts/powermenu/powermenu.sh" )
-    , ((modMask, xK_Return), spawn $ "kitty" )
+    -- , ((modMask, xK_Return), spawn $ "kitty" )
     , ((modMask, xK_Escape), spawn $ "missioncenter" )
-    
+   
     -- *** RESTORED SCRIPT KEYBINDINGS ***
     , ((0, xK_KP_Subtract), spawn $ "exec ~/.config/scripts/shortcut_key_scripts.sh" ) 
     , ((modMask, xK_KP_Subtract), spawn $ "exec kitty -e ~/nix_update.sh" )
@@ -358,7 +413,7 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
     , ((shiftMask, xK_KP_Divide), incWindowSpacing (-2))    
     , ((modMask, xK_KP_Divide), setWindowSpacing (Border 0 0 0 0)) 
 
-    , ((modMask, xK_t), spawn $ "thunar" )
+    --, ((modMask, xK_t), spawn $ "thunar" )
     , ((shiftMask, xK_KP_Multiply), spawn $ "exec ~/.config/polybar/scripts/keyhintvim.sh")
     , ((0, xK_F9), spawn $ "exec ~/.config/scripts/redshift.sh" )
     , ((0, xK_F6), spawn $ "exec ~/.config/scripts/screenoff.sh" )
@@ -380,6 +435,28 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
     -- Shift Window to Previous Workspace and Follow (Mod + Ctrl + K)
     , ((modMask .|. controlMask, xK_k), shiftToPrev >> prevWS)
 
+    , ((modMask .|. shiftMask, xK_Tab), prevWS)
+    
+    , ((mod1Mask, xK_Tab), nextWS)
+    
+    , ((modMask, xK_Tab), nextWS)
+
+    , ((modMask .|. controlMask, xK_j), shiftToNext >> nextWS)
+
+    , ((modMask .|. controlMask, xK_k), shiftToPrev >> prevWS)
+
+    -- ----------------------------------------------------------------------
+    -- ** Scratchpads **
+    -- ----------------------------------------------------------------------
+    , ((myModMask, xK_Return), namedScratchpadAction myScratchpads "terminal")
+    , ((myModMask, xK_F12), namedScratchpadAction myScratchpads "mixer")
+    , ((myModMask .|. shiftMask, xK_grave), namedScratchpadAction myScratchpads "notes")
+    , ((modMask, xK_v), namedScratchpadAction myScratchpads "virt")
+    , ((modMask, xK_w), namedScratchpadAction myScratchpads "vivaldi")
+    , ((modMask, xK_o), namedScratchpadAction myScratchpads "onenote")
+    , ((modMask, xK_e), namedScratchpadAction myScratchpads "thunar")
+    , ((modMask, xK_t), namedScratchpadAction myScratchpads "qbittorrent")
+    
     -- ----------------------------------------------------------------------
     -- ** EXISTING MOVEMENT & LAYOUT BINDINGS **
     -- ----------------------------------------------------------------------
@@ -392,13 +469,12 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
     , ((shiftMask .|. controlMask, xK_Down), windows W.swapDown)
     , ((shiftMask .|. controlMask, xK_Up), windows W.swapUp)
     -- SUPER + SHIFT KEYS
-    , ((modMask .|. shiftMask , xK_r ), spawn $ "xmonad --recompile && xmonad --restart")
+    , ((modMask .|. shiftMask, xK_r), spawn "xmonad --recompile && xmonad --restart || notify-send 'XMonad' 'Recompile failed' -u critical")
     , ((modMask .|. shiftMask , xK_q ), kill)
-    , ((modMask, xK_x ), spawn $ "~/.config/scripts/powermenu/powermenu.sh")
     -- CONTROL + ALT KEYS
     , ((controlMask .|. mod1Mask , xK_Next ), spawn $ "conky-rotate -n")
     , ((controlMask .|. mod1Mask , xK_Prior ), spawn $ "conky-rotate -p")
-    , ((controlMask .|. mod1Mask , xK_b ), spawn $ "thunar")
+    --, ((controlMask .|. mod1Mask , xK_b ), spawn $ "thunar")
     , ((controlMask .|. mod1Mask , xK_f ), spawn $ "firefox")
     , ((controlMask .|. mod1Mask , xK_i ), spawn $ "nitrogen")
     , ((controlMask .|. mod1Mask , xK_p ), spawn $ "~/.config/scripts/picom-toggle.sh")
@@ -466,31 +542,38 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
 
 main :: IO ()
 main = do
-    -- 1. Create the pipe and launch xmobar
-    xmproc <- spawnPipe myXmobarCommand
+    -- 1. Create the pipe and launch xmobar
+    xmproc <- spawnPipe myXmobarCommand
 
-    xmonad . ewmhFullscreen . ewmh $
-        myBaseConfig
-        { startupHook = myStartupHook
-        
-        -- 2. Pass the pipe handle to the corrected log hook function
-        , logHook = myLogHook xmproc
-        
-        , layoutHook = showWName' myShowWNameTheme $
-                         -- ** Outer Gaps (Screen Edge Padding) set to 5 pixels **
-                         gaps [(U, 5), (D, 5), (R, 5), (L, 5)] $
-                         smartBorders $
-                         avoidStruts $
-                         (myLayout ||| layoutHook myBaseConfig)
+    xmonad . ewmhFullscreen . ewmh $
+        myBaseConfig
+        { startupHook = myStartupHook
 
-        , manageHook = manageSpawn <+> myManageHook <+> manageHook myBaseConfig
-        , modMask = myModMask
-        , borderWidth = myBorderWidth
-        , handleEventHook = windowedFullscreenFixEventHook <+> handleEventHook myBaseConfig
-        , focusFollowsMouse = myFocusFollowsMouse
-        , workspaces = myWorkspaces
-        , focusedBorderColor = focdBord
-        , normalBorderColor = normBord
-        , keys = myKeys
-        , mouseBindings = myMouseBindings
-        }
+        -- 2. Pass the pipe handle to the corrected log hook function
+        , logHook = workspaceHistoryHook <+> myLogHook xmproc
+
+        , layoutHook = showWName' myShowWNameTheme $
+                         -- ** Outer Gaps (Screen Edge Padding) set to 5 pixels **
+                         gaps [(U, 5), (D, 5), (R, 5), (L, 5)] $
+                         smartBorders $
+                         avoidStruts $
+                         (myLayout ||| layoutHook myBaseConfig)
+
+        , manageHook = namedScratchpadManageHook myScratchpads
+          <+> manageSpawn
+          <+> myManageHook
+          <+> manageHook myBaseConfig
+
+        , modMask = myModMask
+        , borderWidth = myBorderWidth
+        , handleEventHook =
+              windowedFullscreenFixEventHook
+          <+> handleEventHook myBaseConfig
+
+        , focusFollowsMouse = myFocusFollowsMouse
+        , workspaces = myWorkspaces
+        , focusedBorderColor = focdBord
+        , normalBorderColor = normBord
+        , keys = myKeys
+        , mouseBindings = myMouseBindings
+        }
