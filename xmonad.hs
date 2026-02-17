@@ -1,5 +1,15 @@
 {-# OPTIONS_GHC -Wall #-}
+{-# OPTIONS_GHC -Wextra #-}
+{-# OPTIONS_GHC -Wno-unused-imports #-}
+{-# OPTIONS_GHC -Wno-unused-matches #-}
 {-# OPTIONS_GHC -O2 #-}
+{-# OPTIONS_GHC -XOverloadedStrings #-}
+{-# OPTIONS_GHC -XLambdaCase #-}
+
+-- DRACULA COLOR THEME = Line 149 --
+-- KEYBINDINGS = Line 553 --
+-- SCRATCHPADS = Line 373 / 628 --
+-- XMOBAR = Line 456 -- 
 
 --------------------------
 -- | XMonad Configuration
@@ -8,6 +18,7 @@
 -- System & Base
 import System.IO
 import Graphics.X11.ExtraTypes.XF86
+import Graphics.X11.Xlib.Extras (getWindowProperty32)
 import Control.Monad (liftM2)
 import Data.Char (ord)
 import qualified Data.Map as M
@@ -38,33 +49,37 @@ import XMonad.ManageHook
 import XMonad.Config.Desktop (desktopConfig) -- For myBaseConfig
 import XMonad.Hooks.WorkspaceHistory
 
-
 -- Layouts
 import XMonad.Layout.Spacing
 import XMonad.Layout.Gaps
 import XMonad.Layout.ShowWName
 import XMonad.Layout.ResizableTile
 import XMonad.Layout.Fullscreen (fullscreenFull)
-import XMonad.Layout.Spiral(spiral)
-import XMonad.Layout.MultiColumns ( multiCol )
-import XMonad.Layout.Tabbed ( simpleTabbed )
-import XMonad.Layout.ThreeColumns ( ThreeCol (ThreeCol, ThreeColMid) )
+import XMonad.Layout.Spiral (spiral)
+import XMonad.Layout.MultiColumns (multiCol)
+import XMonad.Layout.Tabbed (tabbed, shrinkText, simpleTabbed)
+import XMonad.Layout.Decoration (Theme(..))
+import Data.Default (def)
+import XMonad.Layout.ThreeColumns (ThreeCol (ThreeCol, ThreeColMid))
 import XMonad.Layout.MultiToggle (mkToggle, single, EOT(EOT), (??), Toggle(..))
-import XMonad.Layout.MultiToggle.Instances (StdTransformers(NBFULL, NOBORDERS)) -- Corrected (GHC 9.x fix)
-import XMonad.Layout.CenteredMaster(centerMaster)
+import XMonad.Layout.MultiToggle.Instances (StdTransformers(NBFULL, NOBORDERS))
+import XMonad.Layout.CenteredMaster (centerMaster)
 import XMonad.Layout.CircleEx (CircleEx)
-import XMonad.Layout.NoBorders -- FIX: Imports 'noBorders' and 'smartBorders'
+import XMonad.Layout.NoBorders (noBorders, smartBorders)
 import XMonad.Layout.LimitWindows
 import XMonad.Layout.SubLayouts
-
+import XMonad.Layout.Decoration (Theme(..))
+import Data.Default (def)
 
 -- Utilities
-import XMonad.Util.EZConfig (additionalKeys, additionalMouseBindings)
+import XMonad.Util.EZConfig (additionalKeys, additionalKeysP, additionalMouseBindings)
 import XMonad.Util.Hacks (windowedFullscreenFixEventHook, javaHack, trayerAboveXmobarEventHook, trayAbovePanelEventHook, trayerPaddingXmobarEventHook, trayPaddingXmobarEventHook, trayPaddingEventHook)
 import XMonad.Util.SpawnOnce
 import XMonad.Util.Run(spawnPipe, hPutStrLn)
 import XMonad.Util.ClickableWorkspaces (clickablePP)
 import XMonad.Util.NamedScratchpad
+import XMonad.Util.NamedWindows (getName)
+import XMonad.Util.Run (safeSpawn)
 
 ------------------------------------------------------------------------
 -- Configuration Variables
@@ -88,13 +103,98 @@ myBorderWidth :: Dimension
 myBorderWidth = 2
 
 ------------------------------------------------------------------------
--- Colors --
+-- Urgency notification (WM_URGENT → notify-send)
 ------------------------------------------------------------------------
-normBord = "#100c08"
-focdBord = "#9580ff"
-fore     = "#9580ff"
-back     = "#282A36"
-winType  = "#BD93F9"
+
+data LibNotifyUrgencyHook = LibNotifyUrgencyHook
+  deriving (Read, Show)
+
+instance UrgencyHook LibNotifyUrgencyHook where
+  urgencyHook LibNotifyUrgencyHook w = do
+    name <- getName w
+    mIdx <- W.findTag w <$> gets windowset
+    case mIdx of
+      Just idx ->
+        safeSpawn "notify-send"
+          [ "Urgent: " ++ show name
+          , "Workspace " ++ idx
+          ]
+      Nothing ->
+        return ()
+
+------------------------------------------------------------------------
+-- Show PID of focused window (copies to clipboard)
+------------------------------------------------------------------------
+
+showActivePid :: X ()
+showActivePid = withFocused $ \w -> do
+  d <- asks display
+  netWmPid <- getAtom "_NET_WM_PID"
+  name     <- getName w
+  mpid     <- io $ getWindowProperty32 d netWmPid w
+
+  case mpid of
+    Just (p:_) -> do
+      -- copy PID to clipboard
+      spawn $ "printf '%s' " ++ show p ++ " | xsel -ib"
+      -- notify user
+      safeSpawn "notify-send" [show name, "pid " ++ show p]
+
+    Nothing ->
+      safeSpawn "notify-send" ["XMonad", "focused window has no PID"]
+
+------------------------------------------------------------------------
+-- Dracula Color Palette
+------------------------------------------------------------------------
+dracBg      = "#282A36"
+dracFg      = "#F8F8F2"
+
+dracBlack   = "#21222C"
+dracGray    = "#44475A"
+dracRed     = "#FF5555"
+dracGreen   = "#8AFF80"
+dracPurple1 = "#6D128D"
+dracPurple2 = "#9580FF"
+dracPink    = "#FF79C6"
+dracOrange  = "#FF9580"
+
+------------------------------------------------------------------------
+-- Borders / Common UI
+------------------------------------------------------------------------
+normBord = dracBlack
+focdBord = dracOrange
+fore     = dracFg
+back     = dracBg
+winType  = dracPurple1
+
+------------------------------------------------------------------------
+-- Semantic UI Colors
+------------------------------------------------------------------------
+colActive   = dracPurple1
+colInactive = dracGray
+colUrgent   = dracRed
+colFocus    = dracPink
+
+------------------------------------------------------------------------
+-- Dracula Theme
+------------------------------------------------------------------------
+myTheme :: Theme
+myTheme = def
+  { activeColor         = colActive
+  , inactiveColor       = colInactive
+  , urgentColor         = colUrgent
+
+  , activeTextColor     = dracBg
+  , inactiveTextColor   = dracFg
+  , urgentTextColor     = dracBg
+
+  , activeBorderColor   = colFocus
+  , inactiveBorderColor = dracBlack
+  , urgentBorderColor   = colUrgent
+
+  , fontName            = "xft:JetBrainsMono Nerd Font:style=Bold:size=10"
+  , decoHeight          = 24
+  }
 
 -- Workspaces
 myWorkspaces :: [String]
@@ -131,45 +231,104 @@ doShiftGoAndCenterFloat ws = doShiftAndGo ws <+> doCenterFloat
 -- the window is shifted first, and then the view is switched to the new workspace.
 shiftAndFollowKey ws = W.greedyView ws . W.shift ws
 
-
 myManageHook :: ManageHook
 myManageHook = composeAll . concat $
-    -- 1. Auto-shift and view rules (Prioritized: Run these first to move windows to the correct workspace)
-    [ 
-      -- EXPLICIT RULE: Shift to ❻ TORRENT AND Center Float qBittorrent
-      [ (className =? "qBittorrent" <||> resource =? "qbittorrent") --> doShiftGoAndCenterFloat "❻ TORRENT ❻" ]
+  ----------------------------------------------------------------------------
+  -- 1. Auto-shift + view rules (run FIRST)
+  ----------------------------------------------------------------------------
+  [ [ (className =? x <||> title =? x <||> resource =? x)
+        --> doShiftAndGo "❶ HOME ❶"
+    | x <- my1Shifts
+    ]
 
-    , [(className =? x <||> title =? x <||> resource =? x) --> doShiftAndGo "❶ HOME ❶" | x <- my1Shifts]
-    , [(className =? x <||> title =? x <||> resource =? x) --> doShiftAndGo "❷ VM ❷" | x <- my2Shifts]
-    , [(className =? x <||> title =? x <||> resource =? x) --> doShiftAndGo "❸ E-MAIL ❸" | x <- my3Shifts]
-    , [(className =? x <||> title =? x <||> resource =? x) --> doShiftAndGo "❹ WEB ❹" | x <- my4Shifts]
-    , [(className =? x <||> title =? x <||> resource =? x) --> doShiftAndGo "❺ CODE ❺" | x <- my5Shifts]
-    , [(className =? x <||> title =? x <||> resource =? x) --> doShiftAndGo "❻ TORRENT ❻" | x <- my6Shifts] 
-    , [(className =? x <||> title =? x <||> resource =? x) --> doShiftAndGo "❼ OTHER ❼" | x <- my7Shifts]
-    , [(className =? x <||> title =? x <||> resource =? x) --> doShiftAndGo "❽ MEDIA ❽" | x <- my8Shifts]
-    , [(className =? x <||> title =? x <||> resource =? x) --> doShiftAndGo "❾ FILES ❾" | x <- my9Shifts]
-    , [(className =? x <||> title =? x <||> resource =? x) --> doShiftAndGo "OTHER" | x <- my10Shifts]
+  , [ (className =? x <||> title =? x <||> resource =? x)
+        --> doShiftAndGo "❷ VM ❷"
+    | x <- my2Shifts
+    ]
 
-    -- 2. Floating rules (Applied to windows that were not shifted)
-    , [isDialog --> doCenterFloat]
-    , [className =? c --> doCenterFloat | c <- myCFloats] -- Classes that center-float
-    , [title =? t --> doFloat | t <- myTFloats]          -- Titles that float
-    , [resource =? r --> doFloat | r <- myRFloats]        -- Resources that float
+  , [ (className =? x <||> title =? x <||> resource =? x)
+        --> doShiftAndGo "❸ E-MAIL ❸"
+    | x <- my3Shifts
+    ]
 
-    -- 3. Fullscreen and Docks
-    , [isFullscreen --> (doF W.focusDown <+> doFullFloat)] -- Ensures focus remains correct when going fullscreen
-    , [manageDocks] -- Standard dock management
+  , [ (className =? x <||> title =? x <||> resource =? x)
+        --> doShiftAndGo "❹ WEB ❹"
+    | x <- my4Shifts
+    ]
 
-    -- 4. Ignore/Lower rules
-    , [className =? i --> doIgnore | i <- myIgnores]
-    , [resource =? i --> doIgnore | i <- myIgnores]
-    , [className =? "Polybar" --> doLower]
-    ]
+  , [ (className =? x <||> title =? x <||> resource =? x)
+        --> doShiftAndGo "❺ CODE ❺"
+    | x <- my5Shifts
+    ]
+
+  , [ (className =? x <||> title =? x <||> resource =? x)
+        --> doShiftAndGo "❻ TORRENT ❻"
+    | x <- my6Shifts
+    ]
+
+  , [ (className =? x <||> title =? x <||> resource =? x)
+        --> doShiftAndGo "❼ OTHER ❼"
+    | x <- my7Shifts
+    ]
+
+  , [ (className =? x <||> title =? x <||> resource =? x)
+        --> doShiftAndGo "❽ MEDIA ❽"
+    | x <- my8Shifts
+    ]
+
+  , [ (className =? x <||> title =? x <||> resource =? x)
+        --> doShiftAndGo "❾ FILES ❾"
+    | x <- my9Shifts
+    ]
+
+  , [ (className =? x <||> title =? x <||> resource =? x)
+        --> doShiftAndGo "OTHER"
+    | x <- my10Shifts
+    ]
+
+  ----------------------------------------------------------------------------
+  -- 2. Floating rules (applied AFTER shifting)
+  ----------------------------------------------------------------------------
+  , [ isDialog --> doCenterFloat ]
+
+  , [ className =? c --> doCenterFloat
+    | c <- myCFloats
+    ]
+
+  , [ title =? t --> doFloat
+    | t <- myTFloats
+    ]
+
+  , [ resource =? r --> doFloat
+    | r <- myRFloats
+    ]
+
+  ----------------------------------------------------------------------------
+  -- 3. Fullscreen & docks
+  ----------------------------------------------------------------------------
+  , [ isFullscreen --> (doF W.focusDown <+> doFullFloat) ]
+
+  , [ manageDocks ]
+
+  ----------------------------------------------------------------------------
+  -- 4. Ignore / lower
+  ----------------------------------------------------------------------------
+  , [ className =? i --> doIgnore
+    | i <- myIgnores
+    ]
+
+  , [ resource =? i --> doIgnore
+    | i <- myIgnores
+    ]
+
+  , [ className =? "Polybar" --> doLower ]
+  ]
+
 
     where
     -- Classes that should float (but NOT shift)
     myCFloats =
-        [ "Arandr", "kitty", "Galculator", "missioncenter", ".arandr-wrapped"
+        [ "Arandr", "kitty", "Galculator", "missioncenter", ".arandr-wrapped", "gnome-calculator"
         , "Org.gnome.Totem", "glide", "org.gnome.Terminal", "feh", "mpv", "rclone-browser"
         , "Xfce4-terminal", "Steam", "Gimp", "MPlayer"
         ]
@@ -276,80 +435,100 @@ tiled = Tall nmaster delta ratio
 -- Layout hook
 myLayout =
   spacingRaw
-    True                 -- enable screen edge gaps
-    (Border 0 8 8 8)     -- screen edge gaps (top right bottom left)
+    True                  -- enable screen edge gaps
+    (Border 0 8 8 8)      -- screen edge gaps (top right bottom left)
     True
-    (Border 8 8 8 8)     -- window gaps
+    (Border 8 8 8 8)      -- window gaps
     True
   $ avoidStruts
   $ mkToggle (NBFULL ?? NOBORDERS ?? EOT)
-  $
-       tiled
-   ||| Mirror tiled
-   ||| spiral (6/7)
-   ||| ThreeColMid 1 delta ratio
-   ||| multiCol [1] 1 0.01 (-0.5)
-   ||| simpleTabbed
-   ||| Full
+  $ (
+         tiled
+     ||| Mirror tiled
+     ||| spiral (6/7)
+     ||| ThreeColMid 1 delta ratio
+     ||| multiCol [1] 1 0.01 (-0.5)
+     ||| simpleTabbed
+     ||| Full
+    )
 
 ------------------------------------------------------------------------
--- Log Hook
+-- Log Hook / Xmobar
 ------------------------------------------------------------------------
 
 myXmobarCommand :: String
 myXmobarCommand = "xmobar ~/.config/xmobar/xmobarrc"
 
--- 1. Define a base PP with all visual customizations.
--- NOTE: This snippet assumes 'windowCount' is defined elsewhere in your XMonad config
--- and that necessary imports (like XMonad.Hooks.DynamicLog, XMonad.Util.Run) are present.
+-- Pretty-printer for xmobar
 myPPBase :: Handle -> PP
 myPPBase h = xmobarPP
-    { ppOutput          = hPutStrLn h
-    , ppCurrent = xmobarColor "#282C34" "#9580FF" . wrap " " " " -- Text color on Background color
-    , ppVisible         = xmobarColor "#ECBE7B" "" . wrap "(" ")"          -- Visible: Wrapped in ( )
-    -- CHANGE: Removed the 'wrap' function and the box definition here.
-    , ppHidden          = xmobarColor "#44475A" ""
-    , ppHiddenNoWindows = \_ -> ""                                           -- Empty: No display
-    , ppUrgent          = xmobarColor "#cc0000" "" . wrap "{" "}"          -- Urgent: Wrapped in { }
-    , ppTitle           = xmobarColor "cadetblue3" "" . shorten 250
-    -- CORRECTED: Use nested fmap to apply xmobarColor to the String,
-    -- handling both the X monad and the Maybe wrapper.
-    , ppExtras          = [fmap (fmap (xmobarColor "#FF9580" "")) windowCount]
-    , ppLayout          = xmobarColor "#6272A4" ""
-    , ppSep             = "<fc=#666666>|</fc>"                              -- Separators in xmobar
-    -- ppOrder: [windowCount, workspaces, layout, title]
-    , ppOrder           = \(ws:l:t:ex) -> ex++[ws,l,t]
-    }
+  { ppOutput          = hPutStrLn h
 
--- 2. Define the log hook using clickable workspaces.
+  -- Workspaces
+  , ppCurrent         = xmobarColor "#282C34" "#9580FF" . wrap " " " "
+  , ppVisible         = xmobarColor "#ECBE7B" ""        . wrap "(" ")"
+  , ppHidden          = xmobarColor "#44475A" ""
+  , ppHiddenNoWindows = const ""
+
+  -- Urgent workspace
+  , ppUrgent          = xmobarColor "#FFFF80" "#cc0000"
+                         . wrap " 🔔 " " 🔔 "
+
+  -- Window title & layout
+  , ppTitle           = xmobarColor "cadetblue3" "" . shorten 250
+  , ppLayout          = xmobarColor "#6272A4" ""
+
+  -- Separators
+  , ppSep             = "<fc=#666666>|</fc>"
+
+  -- Extras (left side)
+  , ppExtras          =
+      [ fmap (fmap (xmobarColor "#FF9580" "")) windowCount ]
+
+  -- Order: extras | workspaces | layout | title
+  , ppOrder           = \(ws:l:t:ex) -> ex ++ [ws, l, t]
+  }
+
+-- Log hook (clickable workspaces + xmobar)
 myLogHook :: Handle -> X ()
-myLogHook h = clickablePP (myPPBase h) >>= dynamicLogWithPP
+myLogHook h =
+  clickablePP (myPPBase h) >>= dynamicLogWithPP
 
+-- Window count for current workspace
 windowCount :: X (Maybe String)
-windowCount = gets $ Just . (++ " ") . ((++) "🪟 ") . show . length . W.integrate' . W.stack . W.workspace . W.current . windowset
--- Breakdown:
--- 1. `W.integrate' . W.stack . W.workspace . W.current . windowset`: Gets the list of windows on the current workspace.
--- 2. `length`: Counts the number of windows.
--- 3. `show`: Converts the number (Int) to a String.
--- 4. `((++) "\xe5c3 ")`: Prepends the icon and a space (e.g., "󰗃 3").
--- 5. `(++ " ")`: Appends another space for padding (e.g., "󰗃 3 ").
--- 6. `Just`: Wraps the resulting string in the Maybe Monad.
+windowCount =
+  gets $
+    Just
+    . (++ " ")
+    . ("🪟 " ++)
+    . show
+    . length
+    . W.integrate'
+    . W.stack
+    . W.workspace
+    . W.current
+    . windowset
 
 ------------------------------------------------------------------------
-myAppGrid = [ ("Telegram-desktop", "telegram-desktop")
-                 , ("VScode", "code-insiders")
-                 , ("Godot", "godot")
-                 , ("Firefox", "firefox")
-                 , ("VirtualBox", "virtualbox")
-                 , ("Kdenlive", "kdenlive")
-                 , ("WPS Writer", "wps")
-                 , ("WPS Sheets", "et")
-                 , ("WPS Presentation", "wpp")
-                 , ("OBS", "obs")
-                 , ("GitHub Desktop", "github-desktop")
-                 , ("Control Center", "systemsettings5") -- this on kde plasma 5 it could have a different command on another DE
-                 , ("Firefox Dev", "firefox-bin")
-                 ]
+-- App Grid
+------------------------------------------------------------------------
+
+myAppGrid :: [(String, String)]
+myAppGrid =
+  [ ("Telegram-desktop", "telegram-desktop")
+  , ("VScode",           "code-insiders")
+  , ("Godot",            "godot")
+  , ("Firefox",          "firefox")
+  , ("VirtualBox",       "virtualbox")
+  , ("Kdenlive",         "kdenlive")
+  , ("WPS Writer",       "wps")
+  , ("WPS Sheets",       "et")
+  , ("WPS Presentation", "wpp")
+  , ("OBS",              "obs")
+  , ("GitHub Desktop",   "github-desktop")
+  , ("Control Center",   "systemsettings5")
+  , ("Firefox Dev",      "firefox-bin")
+  ]
 
 ------------------------------------------------------------------------
 -- Startup Hook
@@ -387,12 +566,12 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
     --, ((modMask, xK_F8), spawn $ "thunar" )
     , ((mod1Mask, xK_space), spawn $ "rofi -theme-str 'window {width: 100%;height: 100%;}' -show drun" )
     , ((controlMask, xK_space), sendMessage NextLayout)
-    , ((0, xF86XK_Calculator), spawn $ "galculator" )
+    , ((0, xF86XK_Calculator), spawn $ "flatpak run org.gnome.Calculator" )
     -- , ((modMask, xK_o), spawn $ "p3x-onenote" )
     , ((modMask, xK_c), spawn $ "code" )
     -- , ((modMask, xK_e), spawn $ "exec evolution" ) -- commented out 'e' to avoid conflict with 'atom'
     , ((modMask, xK_b), spawn $ "exec flatpak run eu.betterbird.Betterbird" )
-    , ((modMask, xK_g), spawn $ "geany" )
+    , ((modMask, xK_g), spawn $ "flatpak run org.geany.Geany" )
     --, ((modMask, xK_w), spawn $ "vivaldi" )
     , ((modMask, xK_space), spawn $ "exec ~/.config/rofi/launchers/type-6/launcher.sh" )
     , ((modMask .|. shiftMask , xK_w ), spawn $ "flatpak run com.microsoft.Edge" )
@@ -466,6 +645,7 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
     , ((shiftMask .|. controlMask, xK_Right), sendMessage Expand)
     -- Sink/Swap
     , ((0, xK_KP_Delete), withFocused $ windows . W.sink)
+    , ((modMask, xK_KP_Delete), sendMessage (Toggle NBFULL))
     , ((shiftMask .|. controlMask, xK_Down), windows W.swapDown)
     , ((shiftMask .|. controlMask, xK_Up), windows W.swapUp)
     -- SUPER + SHIFT KEYS
@@ -481,7 +661,7 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
     , ((controlMask .|. mod1Mask , xK_r ), spawn $ "rofi-theme-selector")
     , ((controlMask .|. mod1Mask , xK_u ), spawn $ "pavucontrol")
     --SCREENSHOTS
-    , ((0, xK_Print), spawn $ "org.flameshot.Flameshot gui" )
+    , ((0, xK_Print), spawn $ "flameshot" )
     --MULTIMEDIA KEYS
     , ((0, xF86XK_AudioMute), spawn "$HOME/.config/scripts/volume.sh --toggle")
     , ((0, xF86XK_AudioLowerVolume), spawn "$HOME/.config/scripts/volume.sh --dec")
@@ -542,38 +722,45 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
 
 main :: IO ()
 main = do
-    -- 1. Create the pipe and launch xmobar
+    -- Launch xmobar
     xmproc <- spawnPipe myXmobarCommand
 
-    xmonad . ewmhFullscreen . ewmh $
-        myBaseConfig
-        { startupHook = myStartupHook
+    xmonad
+      . withUrgencyHook LibNotifyUrgencyHook
+      . ewmhFullscreen
+      . ewmh
+      $ myBaseConfig
+          { startupHook = myStartupHook
 
-        -- 2. Pass the pipe handle to the corrected log hook function
-        , logHook = workspaceHistoryHook <+> myLogHook xmproc
+          , logHook =
+                workspaceHistoryHook
+            <+> myLogHook xmproc
 
-        , layoutHook = showWName' myShowWNameTheme $
-                         -- ** Outer Gaps (Screen Edge Padding) set to 5 pixels **
-                         gaps [(U, 5), (D, 5), (R, 5), (L, 5)] $
-                         smartBorders $
-                         avoidStruts $
-                         (myLayout ||| layoutHook myBaseConfig)
+          , layoutHook =
+                showWName' myShowWNameTheme
+              $ gaps [(U, 5), (D, 5), (R, 5), (L, 5)]
+              $ smartBorders
+              $ avoidStruts
+              $ mkToggle (NBFULL ?? NOBORDERS ?? EOT)
+              $ myLayout
+                ||| layoutHook myBaseConfig
 
-        , manageHook = namedScratchpadManageHook myScratchpads
-          <+> manageSpawn
-          <+> myManageHook
-          <+> manageHook myBaseConfig
+          , manageHook =
+                namedScratchpadManageHook myScratchpads
+            <+> manageSpawn
+            <+> myManageHook
+            <+> manageHook myBaseConfig
 
-        , modMask = myModMask
-        , borderWidth = myBorderWidth
-        , handleEventHook =
-              windowedFullscreenFixEventHook
-          <+> handleEventHook myBaseConfig
+          , handleEventHook =
+                windowedFullscreenFixEventHook
+            <+> handleEventHook myBaseConfig
 
-        , focusFollowsMouse = myFocusFollowsMouse
-        , workspaces = myWorkspaces
-        , focusedBorderColor = focdBord
-        , normalBorderColor = normBord
-        , keys = myKeys
-        , mouseBindings = myMouseBindings
-        }
+          , modMask            = myModMask
+          , borderWidth        = myBorderWidth
+          , focusFollowsMouse  = myFocusFollowsMouse
+          , workspaces         = myWorkspaces
+          , focusedBorderColor = focdBord
+          , normalBorderColor  = normBord
+          , keys               = myKeys
+          , mouseBindings      = myMouseBindings
+          }
