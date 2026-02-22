@@ -1,132 +1,87 @@
 { pkgs, ... }:
 
 {
-  # System-wide packages to install.
   environment.systemPackages = with pkgs; [
-    # General Applications
-    p3x-onenote
-    wasistlos
-    whatsie
-    
-    # Browsers
-    firefox
-    vivaldi 
-    microsoft-edge
 
-    # Networking
-    networkmanager
-    networkmanagerapplet
-
-    # Development Tools
-    cachix
-    evolution
-    geany
-    git
-    neovim
-    (python3.withPackages (ps: [ ps.psutil ]))
-    vscode
-
-    # File Management
-    samba
-    rclone
-    rclone-browser
-
-    # XFCE Thunar Components
-    xfce.thunar
-    xfce.thunar-archive-plugin
-    xfce.thunar-volman
-    samba
-    gvfs
-    cifs-utils
-
-    # Multimedia & Viewers
-    alsa-utils
-    brightnessctl
-    pulseaudioFull
-    pwvucontrol
-    pavucontrol
-    pywal
-    vlc
-    totem
-    mpv
-    xwallpaper
-    blueberry
-    nomacs
-    volumeicon
-    nitrogen
-
-    # System Utilities
-    (pkgs.linuxPackages.cpupower or pkgs.cpupower) # Correct way to reference this on different kernels
-    power-profiles-daemon
-    mission-center
-    cpu-x
-    bitwarden-desktop
-    bleachbit
-    arandr
-    conky
-    kdiskmark
-    gnome-weather
-    lm_sensors
-    localsend
-    flameshot
-    gtk3
-    pkgs.gnome-settings-daemon
-    gnome-calendar
-    gnome-disk-utility
-    mate.engrampa
-    polkit_gnome
-    swtpm
-    sysstat
-    xclip
-    polybar
-    xmobar
-    picom
-    picom-jonaburg
-    pkgs.xdotool 
-    redshift
-    dmenu
-    timeshift
-    nwg-look
-    pkgs.haskellPackages.xmonad-contrib
-    rofi
-    libnotify
-    solaar
-    sxhkd
-    speedtest
-    pamixer
-    unzip
-    xorg.xev
-    xfce.xfce4-power-manager
-    xfce.xfce4-screenshooter
-
-    # Terminal Utilities
-    alacritty
+    # ─── Core CLI / Shell ─────────────────────────
+    zsh
+    starship
+    fzf
     btop
     fastfetch
-    fzf
-    kitty
-    starship
-    wezterm
-    zsh
-
-    # Flatpak Support
-    flatpak
-
-    # Notifications
-    dunst
-
-    # ZSH
-    zsh-autosuggestions
-    zsh-syntax-highlighting
-    zsh-fast-syntax-highlighting
-    zsh-autocomplete
-    
-    # Other Utilities
-    copyq
-    qbittorrent
-    vdhcoapp
+    unzip
     wget
+    git
+    ripgrep
+    neovim
     yt-dlp
-    galculator
+    xclip
+    kitty
+    psmisc        # killall
+    procps        # pgrep, pkill
+    vscode
+
+    # ─── Web Browsers ─────────────────────────────
+    firefox
+    vivaldi
+    microsoft-edge
+
+    # ─── Window Manager / Desktop Core ────────────
+    dmenu
+    rofi
+    polybar
+    xmobar
+    sxhkd
+    dunst
+    libnotify
+    xdotool
+    xev
+    arandr
+    nwg-look
+    xwallpaper
+    nitrogen
+    pywal
+    feh
+
+    picom-jonaburg
+
+    # ─── Session / Autostart Helpers ──────────────
+    polkit_gnome
+    copyq
+    volumeicon
+    blueberry
+    flameshot
+    conky
+
+    # ─── File Management ──────────────────────────
+    thunar
+    mate.engrampa
+
+    # ─── Networking / Sync ────────────────────────
+    rclone
+    rclone-browser
+    networkmanagerapplet
+
+    # ─── Audio / Hardware ─────────────────────────
+    alsa-utils
+    pavucontrol
+    pamixer
+    brightnessctl
+    lm_sensors
+    solaar
+    cava
+
+    # ─── Performance / Monitoring ─────────────────
+    (linuxPackages.cpupower or pkgs.cpupower)
+    sysstat
+    redshift
+    mission-center
+    nvme-cli
+    xfce4-power-manager
+
+    # ─── Nix / System Tooling ─────────────────────
+    cachix
+    p3x-onenote
+    python3
   ];
 }

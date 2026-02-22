@@ -26,7 +26,7 @@ conky.config = {
     minimum_height = 200,
     alignment = 'top_right',                   -- Align to the top right
     gap_x = 10,                                -- Moves 10px to the LEFT from the right edge
-    gap_y = 32,                                -- Adjusted for clean placement below a polybar (use 55 to match your system conky)
+    gap_y = 40,                                -- Adjusted for clean placement below a polybar (use 55 to match your system conky)
 
     -- 🔤 Fonts & Text
     use_xft = true,
@@ -67,17 +67,19 @@ ${color7}(S) + C${color}${alignr}${color2}Code${color}
 ${color7}(S) + R${color}${alignr}${color2}R-Clone Browser${color}
 ${color7}(S) SHIFT + W${color}${alignr}${color2}Microsoft Edge${color}
 ${color2}${hr}${color}
-${color8}CTRL + SPACE${color}${alignr}${color8}Switch Screen Layout${color}
-${color4}Numpad .${color}${alignr}${color4}Reset Stack${color}
-${color4}SHIFT + CTRL + Up / Down${color}${alignr}${color2}Rotate Stack${color}
-${color4}Keypad Divide${color}${alignr}${color2}Increase Window Gaps${color}
-${color4}SHIFT + Keypad Divide${color}${alignr}${color2}Decrease Window Gaps${color}
-${color4}(S) + Keypad Divide${color}${alignr}${color2}Reset Window Gaps${color}
-${color4}SHIFT + CTRL + Left / Right${color}${alignr}${color2}Shrink / Expand Split${color}
-${color4}(S) + CTRL + Left / Right${color}${alignr}${color2}Add / Remove Master${color}
-${color4}CTRL + ALT + Left / Right${color}${alignr}${color2}Switch Workspace${color}
-${color4}(S) + TAB${color}${alignr}${color2}Forward Workspace${color}
-${color4}(S) + SHIFT + TAB${color}${alignr}${color2}Backward Workspace${color}
+${color8}F11${color}${alignr}${color8}Full Screen Toggle${color}
+${color7}CTRL + Space / (S) + Numpad .${color}${alignr}${color7}Switch Screen Layout${color}
+${color5}Numpad .${color}${alignr}${color5}Reset Stack${color}
+${color4}SHIFT + CTRL + Up / Down${color}${alignr}${color4}Rotate Stack${color}
+${color2}${hr}${color}
+${color4}Keypad Divide${color}${alignr}${color4}Increase Window Gaps${color}
+${color4}SHIFT + Keypad Divide${color}${alignr}${color4}Decrease Window Gaps${color}
+${color4}(S) + Keypad Divide${color}${alignr}${color4}Reset Window Gaps${color}
+${color4}SHIFT + CTRL + Left / Right${color}${alignr}${color4}Shrink / Expand Split${color}
+${color4}(S) + CTRL + Left / Right${color}${alignr}${color4}Add / Remove Master${color}
+${color4}CTRL + ALT + Left / Right${color}${alignr}${color4}Switch Workspace${color}
+${color4}(S) + TAB${color}${alignr}${color4}Forward Workspace${color}
+${color4}(S) + SHIFT + TAB${color}${alignr}${color4}Backward Workspace${color}
 ${color2}${hr}${color}
 ${color8}(S) + D${color}${alignr}${color2}D-Menu${color}
 ${color8}ALT + SPACE${color}${alignr}${color2}ROFI (B)${color}

@@ -9,12 +9,15 @@
       "--commit-lock-file"
       "-L"
     ];
-    dates = "Sat *-*-* 05:00:00";
+
+    # Every 2 weeks (1st and 15th), Sunday at 05:00
+    dates = "Sun *-*-01,15 05:00:00";
+
     randomizedDelaySec = "45min";
     persistent = true;
   };
 
-  # Add a post-upgrade notification using systemd override
+  # Post-upgrade notification
   systemd.services.nixos-upgrade.serviceConfig.ExecStartPost = [
     "${pkgs.dunst}/bin/dunstify -u normal -t 10000 '🛠 NixOS Auto Upgrade' 'System has been successfully updated.'"
   ];

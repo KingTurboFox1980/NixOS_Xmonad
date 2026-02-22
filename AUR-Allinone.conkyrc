@@ -27,11 +27,11 @@ conky.config = {
     -- 📐 Position & Size
     alignment = 'top_left',
     gap_x = 10,
-    gap_y = 28,
+    gap_y = 40,
     minimum_width = 350,
     maximum_width = 350,
     minimum_height = 300,
-    maximum_height = 900,
+    maximum_height = 850,
 
     -- 🎨 Visuals
     draw_borders = false,
@@ -85,10 +85,10 @@ ${color9}${cpugraph cpu19 25,170} ${alignr}${cpugraph cpu20 25,170}
 
 # CPU Overview
 ${color2}CPU Freq: ${color3}${freq}MHz ${alignr}${color2}TEMP: ${color3}${execi 5 sensors | grep 'Package id 0:' | awk '{print $4}'}
-${color7}${cpugraph 45,350}
+${color7}${cpugraph 40,350}
 # 🧠 Memory
 ${color2}RAM: ${color1}${mem} / ${memmax} ${alignr}${color3}${memperc}%
-${color7}${memgraph 45,350}
+${color7}${memgraph 40,350}
 
 # 🔍 Top 5 Processes (Memory)
 ${color2}Top 5 Processes${goto 222}cpu%${goto 274}mem%${color8}
@@ -108,7 +108,7 @@ ${fs_bar 5,350 /mnt/data}
 # 🌐 Network
 ${color2}Network ${color3}${hr}
 ${color1}Total Down: ${color1}${totaldown enp4s0} ${alignr}${color6}Total Up: ${color6}${totalup enp4s0}
-${color1}${downspeedgraph enp4s0 40,170} ${alignr}${color6}${upspeedgraph enp4s0 40,170}
+${color1}${downspeedgraph enp4s0 30,170} ${alignr}${color6}${upspeedgraph enp4s0 30,170}
 ${color1}Download: ${downspeed enp4s0}${alignr}${color6}Upload: ${upspeed enp4s0}
 
 # ⏱️ Uptime

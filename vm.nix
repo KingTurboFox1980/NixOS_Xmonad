@@ -13,9 +13,9 @@
     adwaita-icon-theme
 
     # Thunar and plugins (per your requirements)
-    xfce.thunar
-    xfce.thunar-archive-plugin
-    xfce.thunar-volman
+    thunar
+    thunar-archive-plugin
+    thunar-volman
 
     # Core QEMU, KVM, and Networking dependencies
     qemu

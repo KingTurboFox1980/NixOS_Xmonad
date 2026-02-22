@@ -1,8 +1,9 @@
 {
-  description = "NixOS flake for K10 - Fixed Read-Only conflict";
+  description = "K10 NixOS (picom-jonaburg, polybar fixed, qtwebengine allowed)";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+
     picom-jonaburg-src = {
       url = "github:jonaburg/picom";
       flake = false;
@@ -10,56 +11,78 @@
   };
 
   outputs = { self, nixpkgs, picom-jonaburg-src, ... }:
-    let
-      system = "x86_64-linux";
-      
-      # Define our custom pkgs with overlays
-      myPkgs = import nixpkgs {
-        inherit system;
-        config = {
-          allowUnfree = true;
-          # FIX: Add the insecure package here
-          permittedInsecurePackages = [
-            "qtwebengine-5.15.19"
+  let
+    system = "x86_64-linux";
+
+    overlays = [
+      # ─────────────────────────────────────────────
+      # Picom (jonaburg)
+      # ─────────────────────────────────────────────
+      (final: prev: {
+        picom-jonaburg = prev.stdenv.mkDerivation {
+          pname = "picom-jonaburg";
+          version = "git";
+          src = picom-jonaburg-src;
+
+          nativeBuildInputs = with prev; [
+            meson ninja pkg-config asciidoc
           ];
+
+          buildInputs = with prev; [
+            libGL
+            libx11
+            libxext
+            libconfig
+            libxdg_basedir
+            libev
+            glib
+            dbus
+            pcre
+            libdrm
+            cairo
+            pango
+            freetype
+            libxml2
+            uthash
+            libxcb-render-util
+            libxcb-image
+          ];
+
+          mesonBuildType = "release";
         };
-        overlays = [
-          (final: prev: {
-            picom-jonaburg = prev.stdenv.mkDerivation {
-              pname = "picom-jonaburg";
-              version = "custom-v7"; 
-              src = picom-jonaburg-src;
-              nativeBuildInputs = with prev; [ meson ninja pkg-config asciidoc ];
-              buildInputs = with prev; [
-                libGL xorg.libXext xorg.libX11 libconfig libxdg_basedir libev glib
-                dbus pcre libdrm cairo pango freetype libxml2
-                xorg.xcbutilrenderutil xorg.xcbutilimage uthash
-              ];
-              mesonBuildType = "release";
-            };
-            picom = final.picom-jonaburg;
-          })
-        ];
-      };
-    in {
-      nixosConfigurations.K10 = nixpkgs.lib.nixosSystem {
-        specialArgs = { inherit self; }; 
 
-        modules = [
-          {
-            nixpkgs.pkgs = myPkgs;
-          }
+        picom = final.picom-jonaburg;
+      })
 
-          ./configuration.nix
+      # ─────────────────────────────────────────────
+      # Polybar: force older toolchain (stable fix)
+      # ─────────────────────────────────────────────
+      (final: prev: {
+        polybar = prev.polybar.override {
+          stdenv = prev.gcc13Stdenv;
+        };
+      })
+    ];
 
-          ({ pkgs, ... }: {
-            environment.systemPackages = with pkgs; [
-              xfce.thunar
-              xfce.thunar-archive-plugin
-              xfce.thunar-volman
-            ];
-          })
+    pkgs = import nixpkgs {
+      inherit system overlays;
+
+      config = {
+        allowUnfree = true;
+
+        permittedInsecurePackages = [
+          "qtwebengine-5.15.19"
         ];
       };
     };
+  in {
+    nixosConfigurations.K10 = nixpkgs.lib.nixosSystem {
+      inherit system;
+      pkgs = pkgs;
+
+      modules = [
+        ./configuration.nix
+      ];
+    };
+  };
 }
