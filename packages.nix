@@ -49,13 +49,13 @@
     polkit_gnome
     copyq
     volumeicon
-    blueberry
+    blueman
     flameshot
     conky
 
     # ─── File Management ──────────────────────────
     thunar
-    mate.engrampa
+    engrampa
 
     # ─── Networking / Sync ────────────────────────
     rclone

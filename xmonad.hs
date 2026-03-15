@@ -48,6 +48,7 @@ import XMonad.Hooks.EwmhDesktops (ewmh, ewmhFullscreen, fullscreenEventHook)
 import XMonad.ManageHook
 import XMonad.Config.Desktop (desktopConfig) -- For myBaseConfig
 import XMonad.Hooks.WorkspaceHistory
+import XMonad.Hooks.WindowSwallowing
 
 -- Layouts
 import XMonad.Layout.Spacing
@@ -233,143 +234,62 @@ shiftAndFollowKey ws = W.greedyView ws . W.shift ws
 
 myManageHook :: ManageHook
 myManageHook = composeAll . concat $
-  ----------------------------------------------------------------------------
-  -- 1. Auto-shift + view rules (run FIRST)
-  ----------------------------------------------------------------------------
-  [ [ (className =? x <||> title =? x <||> resource =? x)
-        --> doShiftAndGo "❶ HOME ❶"
-    | x <- my1Shifts
+    [
+      -- 1. Consolidated Shift + View Rules
+      -- Uses myWorkMap for easy maintenance
+      [ (className =? a <||> title =? a <||> resource =? a) --> doShiftAndGo ws
+      | (ws, apps) <- myWorkMap
+      , a <- apps
+      ]
+
+      -- 2. Floating Rules
+    , [ isDialog --> doCenterFloat ]
+    , [ isFullscreen --> (doF W.focusDown <+> doFullFloat) ]
+    , [ className =? c --> doCenterFloat | c <- myCFloats ]
+    , [ title     =? t --> doFloat       | t <- myTFloats ]
+    , [ resource  =? r --> doFloat       | r <- myRFloats ]
+    
+      -- 3. XFCE / Thunar Specific Dialog Fixes
+    , [ (className =? "Thunar" <&&> title =? "File Operation Progress") --> doCenterFloat ]
+    , [ (className =? "Thunar" <&&> title =? "Confirm to replace files") --> doCenterFloat ]
+
+      -- 4. Ignore Rules (Conky, Trayer, etc.)
+    , [ (className =? i <||> resource =? i) --> doIgnore | i <- myIgnores ]
+    , [ className =? "Polybar" --> doLower ]
+
+      -- 5. Infrastructure
+    , [ manageDocks ]
     ]
+  where
+    -- Your central "Brain" for workspace assignments
+    myWorkMap =
+        [ ("❶ HOME ❶",    [])
+        , ("❷ VM ❷",      [".virt-manager-wrapped"])
+        , ("❸ E-MAIL ❸",  ["Org.gnome.Evolution", "eu.betterbird.Betterbird"])
+        , ("❹ WEB ❹",     ["Chromium", "Vivaldi-stable", "Firefox", "floorp", "zen", "Navigator", "Microsoft-edge"])
+        , ("❺ CODE ❺",    ["code", "Code", "kate", "geany", "Geany"])
+        , ("❻ TORRENT ❻", ["qBittorrent"])
+        , ("❼ OTHER ❼",   [])
+        , ("❽ MEDIA ❽",   ["vlc", "freetube", "red-app", "mpv", "tartube", "Totem", "glide"])
+        , ("❾ FILES ❾",   ["Thunar", "rclone-browser", "xfce.thunar", "xfce.thunar-archive-plugin", "xfce.thunar-volman"])
+        , ("OTHER",       ["discord"])
+        ]
 
-  , [ (className =? x <||> title =? x <||> resource =? x)
-        --> doShiftAndGo "❷ VM ❷"
-    | x <- my2Shifts
-    ]
+    -- Apps that should always float
+    myCFloats = [ "Arandr", "Galculator", "missioncenter", ".arandr-wrapped"
+                , "gnome-calculator", "feh", "mpv", "Xfce4-terminal", "Steam"
+                , "Gimp", "MPlayer", "Org.gnome.Totem", "glide", "rclone-browser" ]
+    
+    myTFloats = [ "Downloads", "Save As...", "Extension: (MetaMask)" ]
+    
+    myRFloats = [ "gpicview" ]
 
-  , [ (className =? x <||> title =? x <||> resource =? x)
-        --> doShiftAndGo "❸ E-MAIL ❸"
-    | x <- my3Shifts
-    ]
+    -- Things for XMonad to ignore entirely
+    myIgnores = [ "desktop_window", "Conky", "system_conky", "trayer" ]
 
-  , [ (className =? x <||> title =? x <||> resource =? x)
-        --> doShiftAndGo "❹ WEB ❹"
-    | x <- my4Shifts
-    ]
-
-  , [ (className =? x <||> title =? x <||> resource =? x)
-        --> doShiftAndGo "❺ CODE ❺"
-    | x <- my5Shifts
-    ]
-
-  , [ (className =? x <||> title =? x <||> resource =? x)
-        --> doShiftAndGo "❻ TORRENT ❻"
-    | x <- my6Shifts
-    ]
-
-  , [ (className =? x <||> title =? x <||> resource =? x)
-        --> doShiftAndGo "❼ OTHER ❼"
-    | x <- my7Shifts
-    ]
-
-  , [ (className =? x <||> title =? x <||> resource =? x)
-        --> doShiftAndGo "❽ MEDIA ❽"
-    | x <- my8Shifts
-    ]
-
-  , [ (className =? x <||> title =? x <||> resource =? x)
-        --> doShiftAndGo "❾ FILES ❾"
-    | x <- my9Shifts
-    ]
-
-  , [ (className =? x <||> title =? x <||> resource =? x)
-        --> doShiftAndGo "OTHER"
-    | x <- my10Shifts
-    ]
-
-  ----------------------------------------------------------------------------
-  -- 2. Floating rules (applied AFTER shifting)
-  ----------------------------------------------------------------------------
-  , [ isDialog --> doCenterFloat ]
-
-  , [ className =? c --> doCenterFloat
-    | c <- myCFloats
-    ]
-
-  , [ title =? t --> doFloat
-    | t <- myTFloats
-    ]
-
-  , [ resource =? r --> doFloat
-    | r <- myRFloats
-    ]
-
-  ----------------------------------------------------------------------------
-  -- 3. Fullscreen & docks
-  ----------------------------------------------------------------------------
-  , [ isFullscreen --> (doF W.focusDown <+> doFullFloat) ]
-
-  , [ manageDocks ]
-
-  ----------------------------------------------------------------------------
-  -- 4. Ignore / lower
-  ----------------------------------------------------------------------------
-  , [ className =? i --> doIgnore
-    | i <- myIgnores
-    ]
-
-  , [ resource =? i --> doIgnore
-    | i <- myIgnores
-    ]
-
-  , [ className =? "Polybar" --> doLower ]
-  ]
-
-
-    where
-    -- Classes that should float (but NOT shift)
-    myCFloats =
-        [ "Arandr", "kitty", "Galculator", "missioncenter", ".arandr-wrapped", "gnome-calculator"
-        , "Org.gnome.Totem", "glide", "org.gnome.Terminal", "feh", "mpv", "rclone-browser"
-        , "Xfce4-terminal", "Steam", "Gimp", "MPlayer"
-        ]
-    -- Titles that should float
-    myTFloats = ["Downloads", "Save As..."]
-    -- Resources that should float
-    myRFloats = ["gpicview"]
-
-    -- Classes/Resources/Titles that should be ignored by the window manager
-    myIgnores =
-        [ "desktop_window", "Conky", "system_conky"
-        , "trayer"
-        ]
-
-    -- Shift rules for ❶ HOME ❶
-    my1Shifts = []
-    -- Shift rules for ❷ VM ❷ (Removed from myCFloats to ensure shifting works)
-    my2Shifts = [".virt-manager-wrapped"]
-    -- Shift rules for ❸ E-MAIL ❸
-    my3Shifts = ["Org.gnome.Evolution", "eu.betterbird.Betterbird"]
-    -- Shift rules for ❹ WEB ❹
-    my4Shifts =
-        [ "Chromium", "Vivaldi-stable", "Firefox", "Microsoft-edge"
-        , "floorp", "zen", "Navigator"
-        ]
-    -- Shift rules for ❺ CODE ❺
-    my5Shifts = ["code", "kate", "geany", "Geany", "Code"] -- Covers multiple casing/names for Code/Geany
-    -- Shift rules for ❻ TORRENT ❻
-    my6Shifts = [] -- qBittorrent is handled by the explicit rule above
-    -- Shift rules for ❼ OTHER ❼
-    my7Shifts = []
-    -- Shift rules for ❽ MEDIA ❽ (Removed 'vlc' from myTFloats to ensure shifting works)
-    my8Shifts = ["vlc", "freetube", "red-app", "mpv", "tartube", "Totem", "glide"]
-    -- Shift rules for ❾ FILES ❾ (Including specific Thunar components)
-    my9Shifts =
-        [ "Thunar", "rclone-browser"
-        , "xfce.thunar", "xfce.thunar-archive-plugin", "xfce.thunar-volman"
-        ]
-    -- Shift rules for OTHER
-    my10Shifts = ["discord"]
-
+------------------------------------------------------------------------
+-- Scratchpads
+------------------------------------------------------------------------
 myScratchpads :: [NamedScratchpad]
 myScratchpads =
   [ NS "terminal"
@@ -397,6 +317,11 @@ myScratchpads =
      (className =? "vivaldi-scratchpad")
      (customFloating $ W.RationalRect 0.025 0.025 0.95 0.95)
 
+  , NS "zen"
+     "flatpak run app.zen_browser.zen"
+     (className =? "zen" <||> resource =? "Navigator")
+     (customFloating $ W.RationalRect 0.025 0.025 0.95 0.95)
+
   , NS "onenote"
      "p3x-onenote"
      (className =? "p3x-onenote")
@@ -411,9 +336,8 @@ myScratchpads =
      "qbittorrent"
      (className =? "qBittorrent")
      (customFloating $ W.RationalRect 0.1 0.1 0.8 0.8)
-
   ]
-
+  
 ------------------------------------------------------------------------
 -- Layouts
 ------------------------------------------------------------------------
@@ -465,27 +389,40 @@ myPPBase h = xmobarPP
   { ppOutput          = hPutStrLn h
 
   -- Workspaces
+  -- Current: Solid Purple background (Dracula)
   , ppCurrent         = xmobarColor "#282C34" "#9580FF" . wrap " " " "
+  -- Visible: Yellow-ish brackets
   , ppVisible         = xmobarColor "#ECBE7B" ""        . wrap "(" ")"
-  , ppHidden          = xmobarColor "#44475A" ""
+  -- Hidden: Dimmed Gray (only shows if windows are present)
+  , ppHidden          = xmobarColor "#44475A" ""        . wrap " " " "
   , ppHiddenNoWindows = const ""
 
-  -- Urgent workspace
+  -- Urgent workspace: Red alert bell
   , ppUrgent          = xmobarColor "#FFFF80" "#cc0000"
                          . wrap " 🔔 " " 🔔 "
 
-  -- Window title & layout
-  , ppTitle           = xmobarColor "cadetblue3" "" . shorten 250
-  , ppLayout          = xmobarColor "#6272A4" ""
+  -- Window title: Limited to 80 chars for better bar space
+  , ppTitle           = xmobarColor "cadetblue3" "" . shorten 80
+  
+  -- Layout
+  , ppLayout          = xmobarColor "#6272A4" "" . (\x -> case x of
+                          "Spacing Tall"                -> " TALL "
+                          "Mirror Spacing Tall"         -> " MIRR "
+                          "Spacing Spiral"              -> " SPRL "
+                          "Spacing ThreeColMid"         -> " 3COL "
+                          "Spacing multiCol"            -> " MCOL "
+                          "Spacing simpleTabbed"        -> " TABB "
+                          "Spacing Full"                -> " FULL "
+                          _                             -> " " ++ x ++ " "
+                      )
 
   -- Separators
-  , ppSep             = "<fc=#666666>|</fc>"
+  , ppSep             = "<fc=#666666> | </fc>"
 
-  -- Extras (left side)
-  , ppExtras          =
-      [ fmap (fmap (xmobarColor "#FF9580" "")) windowCount ]
+  -- Extras (Window Count)
+  , ppExtras          = [ fmap (fmap (xmobarColor "#FF9580" "")) windowCount ]
 
-  -- Order: extras | workspaces | layout | title
+  -- Order: [WindowCount] [Workspaces] [Layout Icon] [Window Title]
   , ppOrder           = \(ws:l:t:ex) -> ex ++ [ws, l, t]
   }
 
@@ -631,6 +568,7 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
     , ((myModMask, xK_F12), namedScratchpadAction myScratchpads "mixer")
     , ((myModMask .|. shiftMask, xK_grave), namedScratchpadAction myScratchpads "notes")
     , ((modMask, xK_v), namedScratchpadAction myScratchpads "virt")
+    , ((myModMask .|. shiftMask, xK_w), namedScratchpadAction myScratchpads "zen")
     , ((modMask, xK_w), namedScratchpadAction myScratchpads "vivaldi")
     , ((modMask, xK_o), namedScratchpadAction myScratchpads "onenote")
     , ((modMask, xK_e), namedScratchpadAction myScratchpads "thunar")
@@ -717,9 +655,13 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
     ]
 
 ------------------------------------------------------------------------
+-- Window Swallowing Definition
+------------------------------------------------------------------------
+mySwallowHook = swallowEventHook (className =? "kitty") (return True)
+
+------------------------------------------------------------------------
 -- Main Function
 ------------------------------------------------------------------------
-
 main :: IO ()
 main = do
     -- Launch xmobar
@@ -753,6 +695,7 @@ main = do
 
           , handleEventHook =
                 windowedFullscreenFixEventHook
+            <+> mySwallowHook              -- <--- Added Window Swallowing here
             <+> handleEventHook myBaseConfig
 
           , modMask            = myModMask
