@@ -3,85 +3,153 @@
 {
   environment.systemPackages = with pkgs; [
 
-    # ─── Core CLI / Shell ─────────────────────────
-    zsh
-    starship
-    fzf
-    btop
-    fastfetch
-    unzip
-    wget
-    git
-    ripgrep
-    neovim
-    yt-dlp
-    xclip
-    kitty
-    psmisc        # killall
-    procps        # pgrep, pkill
-    vscode
-
-    # ─── Web Browsers ─────────────────────────────
+    # =========================
+    # 🌐 Browsers (Wayland fixed)
+    # =========================
     firefox
-    vivaldi
-    microsoft-edge
 
-    # ─── Window Manager / Desktop Core ────────────
-    dmenu
-    rofi
-    polybar
-    xmobar
-    sxhkd
-    dunst
-    libnotify
-    xdotool
-    xev
-    arandr
-    nwg-look
-    xwallpaper
-    nitrogen
-    pywal
-    feh
+    (vivaldi.override {
+      commandLineArgs = [
+        "--enable-features=UseOzonePlatform"
+        "--ozone-platform=wayland"
+        "--enable-wayland-ime"
+      ];
+    })
 
-    picom-jonaburg
+    (microsoft-edge.override {
+      commandLineArgs = [
+        "--enable-features=UseOzonePlatform"
+        "--ozone-platform=wayland"
+      ];
+    })
 
-    # ─── Session / Autostart Helpers ──────────────
-    polkit_gnome
-    copyq
-    volumeicon
-    blueman
-    flameshot
-    conky
+    p3x-onenote
 
-    # ─── File Management ──────────────────────────
-    thunar
-    engrampa
+    # =========================
+    # 🛠 Development
+    # =========================
+    cachix
+    git
+    neovim
+    vscode
+    geany
+    (python3.withPackages (ps: [ ps.psutil ]))
 
-    # ─── Networking / Sync ────────────────────────
+    # =========================
+    # 📁 File Management
+    # =========================
+    xfce.thunar
+    xfce.thunar-archive-plugin
+    xfce.thunar-volman
+    nemo
+    gvfs
+    samba
+    cifs-utils
     rclone
     rclone-browser
-    networkmanagerapplet
 
-    # ─── Audio / Hardware ─────────────────────────
-    alsa-utils
+    # =========================
+    # 🧱 Hyprland / Wayland Core
+    # =========================
+    hyprland
+    xdg-utils
+    wl-clipboard
+    cliphist
+
+    # Bar / Launcher
+    waybar
+    wofi
+
+    # Wallpaper
+    swww
+    waypaper
+
+    # Idle / Lock
+    hypridle
+    hyprlock
+
+    # Screenshot
+    grim
+    slurp
+
+    # =========================
+    # 🎨 Theming / GTK
+    # =========================
+    nwg-look
+    wallust
+    adwaita-icon-theme
+    gtk3
+    gtk4
+    glib
+    hyprsunset
+
+    # =========================
+    # 🔔 Notifications
+    # =========================
+    dunst
+    libnotify
+
+    # =========================
+    # 🎧 Audio tools
+    # =========================
     pavucontrol
     pamixer
+    alsa-utils
+
+    # =========================
+    # 🎥 Media
+    # =========================
+    mpv
+    vlc
+    nomacs
     brightnessctl
+
+    # =========================
+    # 🔐 Auth / Keyring
+    # =========================
+    polkit_gnome
+    libsecret
+    gnome-keyring
+    seahorse
+
+    # =========================
+    # 🔋 System / Hardware
+    # =========================
+    power-profiles-daemon
     lm_sensors
-    solaar
-    cava
-
-    # ─── Performance / Monitoring ─────────────────
-    (linuxPackages.cpupower or pkgs.cpupower)
-    sysstat
-    redshift
+    cpu-x
     mission-center
-    nvme-cli
-    xfce4-power-manager
+    solaar
 
-    # ─── Nix / System Tooling ─────────────────────
-    cachix
-    p3x-onenote
-    python3
+    # Networking UI
+    networkmanagerapplet
+    blueman
+
+    # =========================
+    # 🧰 Utilities
+    # =========================
+    bitwarden-desktop
+    bleachbit
+    localsend
+    unzip
+    wget
+    yt-dlp
+    qbittorrent
+
+    # GNOME helpers (no DE)
+    gnome-disk-utility
+    gnome-calculator
+
+    # =========================
+    # 💻 Terminal / CLI
+    # =========================
+    kitty
+    alacritty
+    wezterm
+    btop
+    fastfetch
+    fzf
+    zsh
+    starship
   ];
 }

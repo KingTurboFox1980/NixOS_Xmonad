@@ -1,46 +1,61 @@
 { pkgs, ... }:
 
 {
-  # This module declares all system-wide fonts.
-  fonts.packages = with pkgs; [
+  fonts = {
+    # System-wide fonts
+    packages = with pkgs; [
 
-    # Core Fonts and General Use
-    dejavu_fonts
-    noto-fonts
-    noto-fonts-cjk-sans 
-    ubuntu-classic
-    source-code-pro
-    source-sans-pro
-    source-serif-pro
+      # ── Core / UI Fonts ─────────────────────────────
+      dejavu_fonts
+      noto-fonts
+      noto-fonts-cjk-sans
+      ubuntu-classic
 
-    # Coding Fonts (Unpatched)
-    inconsolata
-    fira-code 
-    jetbrains-mono
-    victor-mono
+      # Adobe Source family
+      source-code-pro
+      source-sans-pro
+      source-serif-pro
 
-    # Emoji & Icon Fonts
-    font-awesome_6 
-    material-icons
-    noto-fonts-color-emoji
-    openmoji-color
-    twemoji-color-font
+      # ── Coding Fonts ────────────────────────────────
+      inconsolata
+      fira-code
+      jetbrains-mono
+      victor-mono
 
-    # ✅ Nerd Fonts (Using the fixed, individual package names)
-    nerd-fonts.hack
-    nerd-fonts.fira-code
-    nerd-fonts.jetbrains-mono
-    nerd-fonts.meslo-lg  # <-- FIX: Changed 'meslo' to 'meslo-lg'
-    udev-gothic-nf 
+      # ── Emoji & Icons (Wayland-friendly) ───────────
+      noto-fonts-color-emoji
+      openmoji-color
+      twemoji-color-font
+      font-awesome_6
+      material-icons
 
-    # Specific/Legacy Fonts
-    dina-font        
-    terminus_font
-    proggyfonts
-    orbitron         
+      # ── Nerd Fonts (individual packages – correct) ─
+      nerd-fonts.hack
+      nerd-fonts.fira-code
+      nerd-fonts.jetbrains-mono
+      nerd-fonts.meslo-lg
+      udev-gothic-nf
 
-    # Windows Compatibility Fonts (Only if needed)
-    corefonts
-    vista-fonts
-  ];
+      # ── Bitmap / Retro Fonts (fixed names) ─────────
+      dina-font
+      terminus_font     # ✅ correct name (not terminus-font)
+      proggyfonts
+      orbitron
+
+      # ── Windows compatibility (optional) ───────────
+      corefonts
+      vista-fonts
+    ];
+
+    # ── Fontconfig defaults (important for Wayland) ──
+    fontconfig = {
+      enable = true;
+      defaultFonts = {
+        monospace = [ "JetBrainsMono Nerd Font" "FiraCode Nerd Font" ];
+        sansSerif = [ "Noto Sans" "DejaVu Sans" ];
+        serif = [ "Noto Serif" "DejaVu Serif" ];
+        emoji = [ "Noto Color Emoji" "OpenMoji Color" ];
+      };
+    };
+  };
 }

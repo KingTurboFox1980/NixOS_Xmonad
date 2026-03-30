@@ -24,8 +24,6 @@ sudo nix flake init
 
 then, use the nix_update.sh script to rebuild like normal
 
-After rebuilding run Nix_Flatpaks.sh in the home folder to install all missing programs and Flatpaks
-
 By running the cachix use crazazy command before you rebuild, you ensure that your Nix installation 
 is already aware of and configured to use the crazazy binary cache. When nixos-rebuild switch then starts 
 to evaluate and build your system, Nix will check the crazazy cache for pre-built versions of the packages 

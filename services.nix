@@ -1,54 +1,24 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, ... }:
 
 {
   # =====================================================
-  # 🔧 CORE SYSTEM SERVICES
+  # 🔧 CORE SERVICES
   # =====================================================
   services = {
-    # ---------------------
-    # 💾 Storage / File Mgmt
-    # ---------------------
+    # 📦 App support
+    flatpak.enable = true;
+
+    # 💾 Storage / file systems
     udisks2.enable = true;
     gvfs.enable = true;
     tumbler.enable = true;
     fstrim.enable = true;
-    devmon.enable = true;
 
-    # ---------------------
-    # 🪟 SMB / WINDOWS SHARES
-    # ---------------------
-    samba = {
-      enable = true;
-      settings.global.security = "user";
-    };
-    samba-wsdd.enable = true;
-
-    # ---------------------
-    # 🧠 SYSTEM HEALTH
-    # ---------------------
-    earlyoom = {
-      enable = true;
-      freeMemThreshold = 5;
-      freeSwapThreshold = 5;
-    };
-    smartd.enable = true;
-    fwupd.enable = true;
-    thermald.enable = true;
-
-    journald.extraConfig = ''
-      SystemMaxUse=200M
-      RuntimeMaxUse=50M
-    '';
-
-    # ---------------------
-    # 🔋 POWER
-    # ---------------------
+    # 🔋 Power
     power-profiles-daemon.enable = true;
     upower.enable = true;
 
-    # ---------------------
-    # 🎧 AUDIO (PIPEWIRE)
-    # ---------------------
+    # 🎧 Audio (Wayland native)
     pipewire = {
       enable = true;
       pulse.enable = true;
@@ -58,139 +28,80 @@
       wireplumber.enable = true;
     };
 
-    # ---------------------
-    # 🔑 SECRETS / KEYRING
-    # ---------------------
+    # 🔑 Secrets (Necessary for Vivaldi password storage)
     gnome.gnome-keyring.enable = true;
 
-    # ---------------------
-    # 🖨️ PRINTING
-    # ---------------------
+    # 🖨️ Printing
     printing.enable = true;
 
-    # ---------------------
-    # ⏱️ TIME
-    # ---------------------
+    # ⏱️ Time
     timesyncd.enable = true;
 
-    # ---------------------
-    # 📦 FLATPAK
-    # ---------------------
-    flatpak.enable = true;
-
-    # ---------------------
-    # 🌐 AVAHI
-    # ---------------------
-    avahi = {
-      enable = true;
-      nssmdns4 = true;
-      openFirewall = true;
-    };
+    # 🟦 Bluetooth userspace
+    blueman.enable = true;
   };
 
   # =====================================================
-  # ⚙️ KERNEL / POWER
+  # 🌐 NETWORK
   # =====================================================
-  boot.kernelParams = [ "intel_pstate=active" ];
-  powerManagement.cpuFreqGovernor = "schedutil";
-  security.rtkit.enable = true;
-
-  # Clean /tmp on boot
-  systemd.tmpfiles.rules = [
-  "d /tmp 1777 root root 0d"
-  ];
-
-  systemd.services.NetworkManager-wait-online.enable = false;
-
-  # =====================================================
-  # 🧠 CPU SLICES
-  # =====================================================
-  systemd.slices = {
-    "pcore.slice" = {
-      description = "P-core high performance slice";
-      sliceConfig = {
-        AllowedCPUs = "0-11";
-        CPUWeight = 100;
-      };
-    };
-    "ecore.slice" = {
-      description = "E-core background slice";
-      sliceConfig = {
-        AllowedCPUs = "12-19";
-        CPUWeight = 50;
-      };
-    };
-  };
-
-  # Move selected services to E-cores
-  systemd.services.earlyoom.serviceConfig = {
-    Slice = "ecore.slice";
-    Nice = 10;
-  };
-  systemd.services.smartd.serviceConfig = {
-    Slice = "ecore.slice";
-    Nice = 10;
-  };
-  systemd.services.fwupd.serviceConfig = {
-    Slice = "ecore.slice";
-    Nice = 10;
+  networking = {
+    networkmanager.enable = true;
+    wireless.enable = false; # Using NM instead
+    firewall.enable = true;
   };
 
   # =====================================================
-  # 🧠 NVMe THERMAL MONITOR
+  # 🟦 BLUETOOTH (LOW LEVEL)
   # =====================================================
-  systemd.services.nvme-thermal-monitor = {
-    description = "Monitor NVMe temperature and log";
-    serviceConfig = {
-      ExecStart = "${pkgs.bash}/bin/bash -c 'while true; do nvme smart-log /dev/nvme0 | grep temperature; sleep 60; done'";
-      Type = "simple";
-      Slice = "ecore.slice";
-      Nice = 10;
-    };
-    wantedBy = [ "multi-user.target" ];
+  hardware.bluetooth = {
+    enable = true;
+    powerOnBoot = true;
   };
 
   # =====================================================
-  # 🖥️ XDG PORTALS
+  # 🖥️ XDG PORTALS (WAYLAND CRITICAL)
   # =====================================================
   xdg.portal = {
     enable = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
-    config.common.default = [ "gtk" ];
+    extraPortals = with pkgs; [
+      xdg-desktop-portal-hyprland
+      xdg-desktop-portal-gtk
+    ];
+    config.common.default = [ "hyprland" "gtk" ];
   };
 
   # =====================================================
-  # 👮 SECURITY / POLICYKIT
+  # 👮 POLKIT & AUTHENTICATION
   # =====================================================
   security.polkit.enable = true;
+
+  # This creates the background agent that Vivaldi is looking for
+  systemd.user.services.polkit-gnome-authentication-agent-1 = {
+    description = "polkit-gnome-authentication-agent-1";
+    wantedBy = [ "graphical-session.target" ];
+    wants = [ "graphical-session.target" ];
+    after = [ "graphical-session.target" ];
+    serviceConfig = {
+      Type = "simple";
+      ExecStart = "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
+      Restart = "on-failure";
+      RestartSec = 1;
+      TimeoutStopSec = 10;
+    };
+  };
 
   # =====================================================
   # 🖥️ VIRTUALIZATION
   # =====================================================
   programs.virt-manager.enable = true;
+
   virtualisation = {
     libvirtd.enable = true;
     spiceUSBRedirection.enable = true;
   };
 
-  # =====================================================
-  # 🔥 FIREWALL
-  # =====================================================
-  networking.firewall = {
-    enable = true;
-    allowedTCPPorts = [ 139 445 ];
-    allowedUDPPorts = [ 137 138 ];
-  };
-
-  # =====================================================
-  # 📦 SYSTEM PACKAGES
-  # =====================================================
+  # Ensure the polkit-gnome package is available for the service above
   environment.systemPackages = with pkgs; [
-    libsecret
-    seahorse
-    thunar
-    nvme-cli
-    (linuxPackages.cpupower or pkgs.cpupower)
-    cifs-utils
+    polkit_gnome
   ];
 }

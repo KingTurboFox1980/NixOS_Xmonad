@@ -1,33 +1,45 @@
 { config, pkgs, ... }:
 
 {
-  # Enable dconf for proper graphical integration with virt-manager
+  # 🔧 Required for GTK / virt-manager settings
   programs.dconf.enable = true;
 
-  # Install necessary packages
-  environment.systemPackages = with pkgs; [
-    # Core GUI and interaction tools
-    virt-manager
-    virt-viewer
-    spice-gtk
-    adwaita-icon-theme
-
-    # Thunar and plugins (per your requirements)
-    thunar
-    thunar-archive-plugin
-    thunar-volman
-
-    # Core QEMU, KVM, and Networking dependencies
-    qemu
-    dnsmasq
-    bridge-utils
-    iptables
-  ];
-
-  # Manage the core virtualisation services
+  # 🧠 Virtualization services
   virtualisation.libvirtd = {
     enable = true;
     onBoot = "start";
     onShutdown = "shutdown";
   };
+
+  # 📦 Virtualization tools & helpers
+  environment.systemPackages = with pkgs; [
+    # Core VM tools
+    virt-manager
+    virt-viewer
+    qemu
+
+    # SPICE (display, clipboard, USB)
+    spice-gtk
+    spice-protocol
+    usbredir
+
+    # Networking
+    dnsmasq
+    bridge-utils
+    iptables
+
+    # File manager integration
+    xfce.thunar
+    xfce.thunar-archive-plugin
+    xfce.thunar-volman
+
+    # GTK / Theming
+    adwaita-icon-theme
+
+    # 🔑 REQUIRED for Wayland (polkit dialogs)
+    polkit_gnome
+  ];
+
+  # 👤 Allow user to manage VMs without sudo
+  users.users.j3ll0.extraGroups = [ "libvirtd" "kvm" ];
 }

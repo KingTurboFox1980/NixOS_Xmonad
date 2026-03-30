@@ -1,36 +1,34 @@
 { config, pkgs, ... }:
 
 {
-  # 🎮 Graphics acceleration and driver support
+  # 🎮 Graphics acceleration (Wayland / Hyprland)
   hardware.graphics = {
-    enable = true; # Enables OpenGL, pulls in the core 'mesa' package (which contains the Intel Vulkan driver)
+    enable = true;
 
-    # 🚀 MEDIA ACCELERATION (VAAPI/VDPAU)
+    # 🚀 Media & GPU drivers
     extraPackages = with pkgs; [
-      intel-media-driver        # VAAPI driver for Gen9+ Intel GPUs
-      libvdpau-va-gl            # VDPAU-to-VAAPI bridge
-      
-      # VULKAN SUPPORT
-      vulkan-loader             # Standard Vulkan loader
-      # NOTE: Removed 'vulkan-intel' because it was causing an "undefined variable" error. 
-      # The driver is provided implicitly by 'mesa' due to hardware.graphics.enable = true.
+      intel-media-driver        # VAAPI (Gen9+ Intel)
+      libvdpau-va-gl            # VDPAU → VAAPI bridge
     ];
   };
 
-  # 🧩 32-bit GPU support for legacy apps (Steam, Wine)
-  # We use the general 32-bit 'mesa' package to ensure all 32-bit GL/Vulkan drivers are present.
+  # 🧩 32-bit GPU support (Steam / Wine)
   environment.systemPackages = with pkgs; [
-    # 32-bit Media Acceleration
-    pkgsi686Linux.intel-media-driver 
-    
-    # 32-bit Graphics Drivers (Vulkan/OpenGL)
+    # 32-bit OpenGL / Vulkan
     pkgsi686Linux.mesa
     pkgsi686Linux.vulkan-loader
+
+    # OPTIONAL: only keep if you really need 32-bit VAAPI
+    # pkgsi686Linux.intel-media-driver
+
+    # 🛠 Debug / info tools (strongly recommended)
+    vulkan-tools
+    mesa-demos
   ];
 
-  # 🌐 Environment variables for media acceleration
+  # 🌐 Media acceleration environment
   environment.variables = {
-    LIBVA_DRIVER_NAME = "iHD";      # Use intel-media-driver for VAAPI
-    VDPAU_DRIVER = "va_gl";         # Route VDPAU apps through VAAPI bridge
+    LIBVA_DRIVER_NAME = "iHD";  # Intel media driver
+    VDPAU_DRIVER = "va_gl";     # VDPAU via VAAPI
   };
 }
