@@ -1,45 +1,51 @@
 { config, pkgs, ... }:
-
 {
-  # 🔧 Required for GTK / virt-manager settings
+  # Required for virt-manager settings to persist
   programs.dconf.enable = true;
 
-  # 🧠 Virtualization services
-  virtualisation.libvirtd = {
-    enable = true;
-    onBoot = "start";
-    onShutdown = "shutdown";
-  };
+  # Best way to install virt-manager with proper desktop integration
+  programs.virt-manager.enable = true;
 
-  # 📦 Virtualization tools & helpers
   environment.systemPackages = with pkgs; [
-    # Core VM tools
-    virt-manager
     virt-viewer
-    qemu
-
-    # SPICE (display, clipboard, USB)
     spice-gtk
-    spice-protocol
-    usbredir
-
-    # Networking
-    dnsmasq
-    bridge-utils
-    iptables
-
-    # File manager integration
-    xfce.thunar
-    xfce.thunar-archive-plugin
-    xfce.thunar-volman
-
-    # GTK / Theming
     adwaita-icon-theme
-
-    # 🔑 REQUIRED for Wayland (polkit dialogs)
-    polkit_gnome
+    thunar
+    thunar-archive-plugin
+    thunar-volman
   ];
 
-  # 👤 Allow user to manage VMs without sudo
-  users.users.j3ll0.extraGroups = [ "libvirtd" "kvm" ];
+  # === Main libvirtd configuration for Windows 11 Pro ===
+  virtualisation.libvirtd = {
+    enable = true;
+
+    onBoot = "start";
+    onShutdown = "shutdown";
+
+    # Run QEMU as your regular user (more secure + better performance/integration)
+    qemu.runAsRoot = false;
+
+    # Software TPM 2.0 — **required** for Windows 11
+    qemu.swtpm.enable = true;
+
+    # UEFI + Secure Boot firmware is now available by default (no ovmf block needed)
+  };
+
+  # Enable USB redirection (pass USB devices to the VM easily)
+  virtualisation.spiceUSBRedirection.enable = true;
+
+  # === Fixes for the credential/encryption key errors you saw ===
+  # This makes the service more resilient when it fails to generate the key
+  systemd.services.virt-secret-init-encryption = {
+    serviceConfig = {
+      Restart = "on-failure";
+      RestartSec = "3s";
+      TimeoutStartSec = "15s";   # Give it more time on slow boots
+    };
+  };
+
+  # Ensure the secrets directory always exists with correct permissions
+  systemd.tmpfiles.rules = [
+    "d /var/lib/libvirt/secrets 0755 root root -"
+  ];
 }

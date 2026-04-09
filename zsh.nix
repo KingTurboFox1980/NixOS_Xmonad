@@ -1,39 +1,46 @@
 { pkgs, lib, config, ... }:
 
 {
-  # 1. Base Zsh Configuration
-  # We are keeping this minimal since the older channel doesn't support 'plugins' or 'rcInit'.
+  ##########################################################################
+  # Zsh (minimal, safe)
+  ##########################################################################
   programs.zsh = {
     enable = true;
 
-    # 2. Define Aliases
     shellAliases = {
-      # Standard Utilities
-      ll = lib.mkForce "ls -lh"; # <-- Using mkForce to override the conflicting definition
+      # Standard utilities
+      ll   = "ls -lh";
       home = "cd ~";
 
       # Color aliases
-      ls = "ls --color=auto";
+      ls   = "ls --color=auto";
       grep = "grep --color=auto";
 
-      # Flake and System Management
-      update = "sudo nixos-rebuild switch"; # Standard update alias
-      fu = "(cd /etc/nixos && sudo nixos-rebuild switch --flake .#K10)";
-      fub = "(cd /etc/nixos && nix build .#nixosConfigurations.K10.config.system.build.toplevel)";
-      up = "sudo /home/j3ll0/nix_update.sh";
+      # Flake and system management
+      update = "sudo nixos-rebuild switch";
+      fu     = "(cd /etc/nixos && sudo nixos-rebuild switch --flake .#K10)";
+      fub    = "(cd /etc/nixos && nix build .#nixosConfigurations.K10.config.system.build.toplevel)";
+      up     = "sudo /home/j3ll0/nix_update.sh";
 
       # Maintenance
       trim = "sudo fstrim -v /";
 
-      # Navigation and Editor
+      # Navigation and editor
       dot = "cd /etc/nixos/";
-      v = "sudo -E nvim";
+      v   = "sudo -E nvim";
 
-      # XMonad Script
+      # XMonad
       keys = ".config/scripts/update_xmonad_keys.sh";
     };
+
+    # Starship must be initialized in interactive shells
+    interactiveShellInit = lib.optionalString config.programs.starship.enable ''
+      eval "$(starship init zsh)"
+    '';
   };
 
-  # 3. Starship configuration
+  ##########################################################################
+  # Starship
+  ##########################################################################
   programs.starship.enable = true;
 }

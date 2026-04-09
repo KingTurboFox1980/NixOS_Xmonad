@@ -6,10 +6,10 @@
 {-# OPTIONS_GHC -XOverloadedStrings #-}
 {-# OPTIONS_GHC -XLambdaCase #-}
 
--- DRACULA COLOR THEME = Line 149 --
--- KEYBINDINGS = Line 553 --
--- SCRATCHPADS = Line 373 / 628 --
--- XMOBAR = Line 456 -- 
+-- DRACULA COLOR THEME = Line 151 --
+-- KEYBINDINGS = Line 502 --
+-- SCRATCHPADS = Line 296 / 580 --
+-- XMOBAR = Line 398 -- 
 
 --------------------------
 -- | XMonad Configuration
@@ -41,7 +41,7 @@ import XMonad.Actions.MouseResize
 -- Hooks
 import XMonad.Hooks.DynamicLog (dynamicLogWithPP, wrap, xmobarPP, xmobarColor, shorten, PP(..))
 import XMonad.Hooks.ManageDocks (docks, manageDocks, avoidStruts)
-import XMonad.Hooks.ManageHelpers(doFullFloat, doCenterFloat, isFullscreen, isDialog, doLower)
+import XMonad.Hooks.ManageHelpers (doRectFloat, doCenterFloat, isDialog, isFullscreen, doFullFloat, doLower)
 import XMonad.Hooks.SetWMName
 import XMonad.Hooks.UrgencyHook
 import XMonad.Hooks.EwmhDesktops (ewmh, ewmhFullscreen, fullscreenEventHook)
@@ -52,6 +52,7 @@ import XMonad.Hooks.WindowSwallowing
 
 -- Layouts
 import XMonad.Layout.Spacing
+import XMonad.Layout.PerWorkspace (onWorkspace)
 import XMonad.Layout.Gaps
 import XMonad.Layout.ShowWName
 import XMonad.Layout.ResizableTile
@@ -81,6 +82,8 @@ import XMonad.Util.ClickableWorkspaces (clickablePP)
 import XMonad.Util.NamedScratchpad
 import XMonad.Util.NamedWindows (getName)
 import XMonad.Util.Run (safeSpawn)
+
+import Data.List (isInfixOf)
 
 ------------------------------------------------------------------------
 -- Configuration Variables
@@ -250,11 +253,12 @@ myManageHook = composeAll . concat $
     , [ resource  =? r --> doFloat       | r <- myRFloats ]
     
       -- 3. XFCE / Thunar Specific Dialog Fixes
-    , [ (className =? "Thunar" <&&> title =? "File Operation Progress") --> doCenterFloat ]
-    , [ (className =? "Thunar" <&&> title =? "Confirm to replace files") --> doCenterFloat ]
+    , [ (className =? "thunar-scratchpad" <&&> title =? "File Operation Progress") --> doRectFloat (W.RationalRect 0.35 0.45 0.3 0.1) ]
+    , [ (className =? "thunar-scratchpad" <&&> title =? "Confirm to replace files") --> doRectFloat (W.RationalRect 0.3 0.3 0.4 0.3) ]
 
       -- 4. Ignore Rules (Conky, Trayer, etc.)
     , [ (className =? i <||> resource =? i) --> doIgnore | i <- myIgnores ]
+    , [ className =? "Conky" --> doIgnore <+> doLower ] -- Use doIgnore to stay on top
     , [ className =? "Polybar" --> doLower ]
 
       -- 5. Infrastructure
@@ -266,11 +270,11 @@ myManageHook = composeAll . concat $
         [ ("❶ HOME ❶",    [])
         , ("❷ VM ❷",      [".virt-manager-wrapped"])
         , ("❸ E-MAIL ❸",  ["Org.gnome.Evolution", "eu.betterbird.Betterbird"])
-        , ("❹ WEB ❹",     ["Chromium", "Vivaldi-stable", "Firefox", "floorp", "zen", "Navigator", "Microsoft-edge"])
+        , ("❹ WEB ❹",     ["Chromium", "Vivaldi-stable", "Firefox", "floorp", "Navigator"])
         , ("❺ CODE ❺",    ["code", "Code", "kate", "geany", "Geany"])
         , ("❻ TORRENT ❻", ["qBittorrent"])
         , ("❼ OTHER ❼",   [])
-        , ("❽ MEDIA ❽",   ["vlc", "freetube", "red-app", "mpv", "tartube", "Totem", "glide"])
+        , ("❽ MEDIA ❽",   ["vlc", "io.github.celluloid_player.Celluloid", "VacuumTube", "freetube", "red-app", "mpv", "tartube", "Totem", "glide"])
         , ("❾ FILES ❾",   ["Thunar", "rclone-browser", "xfce.thunar", "xfce.thunar-archive-plugin", "xfce.thunar-volman"])
         , ("OTHER",       ["discord"])
         ]
@@ -280,7 +284,8 @@ myManageHook = composeAll . concat $
                 , "gnome-calculator", "feh", "mpv", "Xfce4-terminal", "Steam"
                 , "Gimp", "MPlayer", "Org.gnome.Totem", "glide", "rclone-browser" ]
     
-    myTFloats = [ "Downloads", "Save As...", "Extension: (MetaMask)" ]
+    myTFloats = [ "Downloads", "Save As...", "Extension: (MetaMask)"
+            , "File Operation Progress", "Confirm File Replace", "Unlock Drive" ]
     
     myRFloats = [ "gpicview" ]
 
@@ -317,10 +322,10 @@ myScratchpads =
      (className =? "vivaldi-scratchpad")
      (customFloating $ W.RationalRect 0.025 0.025 0.95 0.95)
 
-  , NS "zen"
-     "flatpak run app.zen_browser.zen"
-     (className =? "zen" <||> resource =? "Navigator")
-     (customFloating $ W.RationalRect 0.025 0.025 0.95 0.95)
+  , NS "edge"
+      "microsoft-edge-stable --new-window --class=EdgeScratchpad"
+      (className =? "EdgeScratchpad")
+      (customFloating $ W.RationalRect 0.025 0.025 0.95 0.95)
 
   , NS "onenote"
      "p3x-onenote"
@@ -330,12 +335,15 @@ myScratchpads =
   , NS "thunar"
      "thunar --class=thunar-scratchpad"
      (className =? "thunar-scratchpad")
-     (customFloating $ W.RationalRect 0.1 0.1 0.8 0.8)
+     (customFloating $ W.RationalRect 0.15 0.15 0.7 0.7)
 
   , NS "qbittorrent"
      "qbittorrent"
      (className =? "qBittorrent")
      (customFloating $ W.RationalRect 0.1 0.1 0.8 0.8)
+
+  , NS "missioncenter" "missioncenter" (className =? "missioncenter")
+    (customFloating $ W.RationalRect 0.1 0.1 0.8 0.8)
   ]
   
 ------------------------------------------------------------------------
@@ -358,78 +366,81 @@ tiled = Tall nmaster delta ratio
 
 -- Layout hook
 myLayout =
-  spacingRaw
-    True                  -- enable screen edge gaps
-    (Border 0 8 8 8)      -- screen edge gaps (top right bottom left)
-    True
-    (Border 8 8 8 8)      -- window gaps
-    True
+    smartBorders                          -- Removes gaps/borders if only 1 window is open
+  $ spacingRaw
+      True                                -- enable screen edge gaps
+      (Border 0 8 8 8)                    -- screen edge gaps (top right bottom left)
+      True
+      (Border 8 8 8 8)                    -- window gaps
+      True
   $ avoidStruts
   $ mkToggle (NBFULL ?? NOBORDERS ?? EOT)
-  $ (
-         tiled
-     ||| Mirror tiled
-     ||| spiral (6/7)
-     ||| ThreeColMid 1 delta ratio
-     ||| multiCol [1] 1 0.01 (-0.5)
-     ||| simpleTabbed
-     ||| Full
-    )
+  $ layouts
+  where
+    -- This uses your Dracula myTheme colors (Purple/Pink/Orange)
+    myTabs = tabbed shrinkText myTheme
+
+    -- Per-Workspace Rules: Setting the "Default" for specific areas
+    layouts = onWorkspace "❹ WEB ❹"   (myTabs ||| Full)
+            $ onWorkspace "❺ CODE ❺"  (myTabs ||| tiled)
+            $ onWorkspace "❽ MEDIA ❽" (Full   ||| tiled)
+            -- Default rotation for everyone else
+            $ ( tiled
+            ||| Mirror tiled
+            ||| spiral (6/7)
+            ||| ThreeColMid 1 delta ratio
+            ||| multiCol [1] 1 0.01 (-0.5)
+            ||| myTabs
+            ||| Full
+            )
 
 ------------------------------------------------------------------------
 -- Log Hook / Xmobar
 ------------------------------------------------------------------------
-
 myXmobarCommand :: String
 myXmobarCommand = "xmobar ~/.config/xmobar/xmobarrc"
 
 -- Pretty-printer for xmobar
 myPPBase :: Handle -> PP
 myPPBase h = xmobarPP
-  { ppOutput          = hPutStrLn h
+  { ppOutput = hPutStrLn h
 
   -- Workspaces
-  -- Current: Solid Purple background (Dracula)
-  , ppCurrent         = xmobarColor "#282C34" "#9580FF" . wrap " " " "
-  -- Visible: Yellow-ish brackets
-  , ppVisible         = xmobarColor "#ECBE7B" ""        . wrap "(" ")"
-  -- Hidden: Dimmed Gray (only shows if windows are present)
-  , ppHidden          = xmobarColor "#44475A" ""        . wrap " " " "
+  , ppCurrent = xmobarColor dracBlack dracPurple2 . wrap " " " "
+  , ppVisible = xmobarColor dracOrange "" . wrap "(" ")"
+  , ppHidden = xmobarColor dracGray "" . wrap " " " "
   , ppHiddenNoWindows = const ""
 
   -- Urgent workspace: Red alert bell
-  , ppUrgent          = xmobarColor "#FFFF80" "#cc0000"
-                         . wrap " 🔔 " " 🔔 "
+  , ppUrgent = xmobarColor "#FFFF80" dracRed . wrap " 🔔 " " 🔔 "
 
-  -- Window title: Limited to 80 chars for better bar space
-  , ppTitle           = xmobarColor "cadetblue3" "" . shorten 80
-  
-  -- Layout
-  , ppLayout          = xmobarColor "#6272A4" "" . (\x -> case x of
-                          "Spacing Tall"                -> " TALL "
-                          "Mirror Spacing Tall"         -> " MIRR "
-                          "Spacing Spiral"              -> " SPRL "
-                          "Spacing ThreeColMid"         -> " 3COL "
-                          "Spacing multiCol"            -> " MCOL "
-                          "Spacing simpleTabbed"        -> " TABB "
-                          "Spacing Full"                -> " FULL "
-                          _                             -> " " ++ x ++ " "
+  -- Window title: Changed to Dracula Orange as requested
+  , ppTitle = xmobarColor dracOrange "" . shorten 80
+
+  -- Layout Renaming
+  , ppLayout = xmobarColor dracGray "" . (\x -> case x of
+                          l | "Tabbed" `isInfixOf` l -> " [TAB] "
+                          l | "Full"   `isInfixOf` l -> " [FUL] "
+                          l | "Tall"   `isInfixOf` l -> " [TAL] "
+                          l | "ThreeCol" `isInfixOf` l -> " [3COL]"
+                          l | "Spiral" `isInfixOf` l -> " [SPRL]"
+                          l | "multiCol" `isInfixOf` l -> " [MCOL]"
+                          _ -> " " ++ x ++ " "
                       )
 
   -- Separators
-  , ppSep             = "<fc=#666666> | </fc>"
+  , ppSep = xmobarColor dracGray "" " | "
 
-  -- Extras (Window Count)
-  , ppExtras          = [ fmap (fmap (xmobarColor "#FF9580" "")) windowCount ]
+  -- Extras (Window Count) - kept orange as it fits well
+  , ppExtras = [ fmap (fmap (xmobarColor dracOrange "")) windowCount ]
 
   -- Order: [WindowCount] [Workspaces] [Layout Icon] [Window Title]
-  , ppOrder           = \(ws:l:t:ex) -> ex ++ [ws, l, t]
+  , ppOrder = \(ws:l:t:ex) -> ex ++ [ws, l, t]
   }
 
 -- Log hook (clickable workspaces + xmobar)
 myLogHook :: Handle -> X ()
-myLogHook h =
-  clickablePP (myPPBase h) >>= dynamicLogWithPP
+myLogHook h = clickablePP (myPPBase h) >>= dynamicLogWithPP
 
 -- Window count for current workspace
 windowCount :: X (Maybe String)
@@ -511,10 +522,13 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
     , ((modMask, xK_g), spawn $ "flatpak run org.geany.Geany" )
     --, ((modMask, xK_w), spawn $ "vivaldi" )
     , ((modMask, xK_space), spawn $ "exec ~/.config/rofi/launchers/type-6/launcher.sh" )
-    , ((modMask .|. shiftMask , xK_w ), spawn $ "flatpak run com.microsoft.Edge" )
+    --, ((modMask .|. shiftMask , xK_w ), spawn $ "flatpak run com.microsoft.Edge" )
     , ((modMask, xK_x), spawn $ "~/.config/scripts/powermenu/powermenu.sh" )
     -- , ((modMask, xK_Return), spawn $ "kitty" )
     , ((modMask, xK_Escape), spawn $ "missioncenter" )
+
+    -- Hardware HUD Toggle (Keypad Enter)
+    , ((0, xK_KP_Enter), spawn "~/.config/xmonad/scripts/toggle_conky.sh")
    
     -- *** RESTORED SCRIPT KEYBINDINGS ***
     , ((0, xK_KP_Subtract), spawn $ "exec ~/.config/scripts/shortcut_key_scripts.sh" ) 
@@ -562,17 +576,18 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
     , ((modMask .|. controlMask, xK_k), shiftToPrev >> prevWS)
 
     -- ----------------------------------------------------------------------
-    -- ** Scratchpads **
-    -- ----------------------------------------------------------------------
+-- ** Scratchpads **
+-- ----------------------------------------------------------------------
     , ((myModMask, xK_Return), namedScratchpadAction myScratchpads "terminal")
     , ((myModMask, xK_F12), namedScratchpadAction myScratchpads "mixer")
     , ((myModMask .|. shiftMask, xK_grave), namedScratchpadAction myScratchpads "notes")
     , ((modMask, xK_v), namedScratchpadAction myScratchpads "virt")
-    , ((myModMask .|. shiftMask, xK_w), namedScratchpadAction myScratchpads "zen")
+    , ((myModMask .|. shiftMask, xK_w), namedScratchpadAction myScratchpads "edge")
     , ((modMask, xK_w), namedScratchpadAction myScratchpads "vivaldi")
     , ((modMask, xK_o), namedScratchpadAction myScratchpads "onenote")
     , ((modMask, xK_e), namedScratchpadAction myScratchpads "thunar")
     , ((modMask, xK_t), namedScratchpadAction myScratchpads "qbittorrent")
+    , ((myModMask, xK_Escape), namedScratchpadAction myScratchpads "missioncenter")
     
     -- ----------------------------------------------------------------------
     -- ** EXISTING MOVEMENT & LAYOUT BINDINGS **
@@ -687,11 +702,11 @@ main = do
               $ myLayout
                 ||| layoutHook myBaseConfig
 
-          , manageHook =
-                namedScratchpadManageHook myScratchpads
-            <+> manageSpawn
-            <+> myManageHook
-            <+> manageHook myBaseConfig
+          , manageHook = 
+               myManageHook                         -- 1. Check for "Progress" title first
+           <+> namedScratchpadManageHook myScratchpads  -- 2. Then apply the "Big" scratchpad size
+           <+> manageSpawn
+           <+> manageHook myBaseConfig
 
           , handleEventHook =
                 windowedFullscreenFixEventHook

@@ -1,0 +1,35 @@
+Config { font            = "Caskaydia Cove SemiBold 12"
+       , additionalFonts = [ "DejaVu Sans Mono italic 13"
+                           , "Inter 13"
+                           , "Font Awesome 6 Free Solid 13"
+                           , "Font Awesome 6 Brands 13"
+                           , "Feather 13"
+                           ]
+       , bgColor = "#282C34"
+       , fgColor = "#BBC2CF"
+       , position = Static { xpos = 0 , ypos = 0, width = 1920, height = 22 }
+       , lowerOnStart = True
+       , hideOnStart = False
+       , allDesktops = True
+       , persistent = True
+       , alpha    = 255  -- default: 255
+       , iconRoot = "$HOME/.xmonad/xpm/"  -- default: "."
+       , commands = [
+           -- Time monitor (no action)
+           Run Date "<fn=2></fn>🕰️ %I:%M:%S %p" "time" 10,
+           
+           -- Date monitor with gnome-calendar action on click (using button=1 for left click)
+           Run Date "<action=`gnome-calendar` button=1><fn=2></fn>🗓️ %A, %B %d</action>" "date" 10,
+           
+           -- MyButton definition
+           Run Com "echo" 
+             ["<action=`~/.config/scripts/shortcut_key_scripts.sh` button=1><icon=/home/j3ll0/.config/xmobar/haskell_20.xpm/></action>"] 
+             "myButton" 
+             36000,
+             
+           Run UnsafeStdinReader
+           ]
+       , sepChar = "%"
+       , alignSep = "}{"
+       , template = "%myButton%|<fc=aquamarine3>%time%</fc> %UnsafeStdinReader%}{<fc=#9580FF>%date%</fc> "
+}

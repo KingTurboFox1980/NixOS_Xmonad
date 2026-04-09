@@ -3,153 +3,91 @@
 {
   environment.systemPackages = with pkgs; [
 
-    # =========================
-    # 🌐 Browsers (Wayland fixed)
-    # =========================
-    firefox
-
-    (vivaldi.override {
-      commandLineArgs = [
-        "--enable-features=UseOzonePlatform"
-        "--ozone-platform=wayland"
-        "--enable-wayland-ime"
-      ];
-    })
-
-    (microsoft-edge.override {
-      commandLineArgs = [
-        "--enable-features=UseOzonePlatform"
-        "--ozone-platform=wayland"
-      ];
-    })
-
-    p3x-onenote
-
-    # =========================
-    # 🛠 Development
-    # =========================
-    cachix
-    git
-    neovim
-    vscode
-    geany
-    (python3.withPackages (ps: [ ps.psutil ]))
-
-    # =========================
-    # 📁 File Management
-    # =========================
-    xfce.thunar
-    xfce.thunar-archive-plugin
-    xfce.thunar-volman
-    nemo
-    gvfs
-    samba
-    cifs-utils
-    rclone
-    rclone-browser
-
-    # =========================
-    # 🧱 Hyprland / Wayland Core
-    # =========================
-    hyprland
-    xdg-utils
-    wl-clipboard
-    cliphist
-
-    # Bar / Launcher
-    waybar
-    wofi
-
-    # Wallpaper
-    swww
-    waypaper
-
-    # Idle / Lock
-    hypridle
-    hyprlock
-
-    # Screenshot
-    grim
-    slurp
-
-    # =========================
-    # 🎨 Theming / GTK
-    # =========================
-    nwg-look
-    wallust
-    adwaita-icon-theme
-    gtk3
-    gtk4
-    glib
-    hyprsunset
-
-    # =========================
-    # 🔔 Notifications
-    # =========================
-    dunst
-    libnotify
-
-    # =========================
-    # 🎧 Audio tools
-    # =========================
-    pavucontrol
-    pamixer
-    alsa-utils
-
-    # =========================
-    # 🎥 Media
-    # =========================
-    mpv
-    vlc
-    nomacs
-    brightnessctl
-
-    # =========================
-    # 🔐 Auth / Keyring
-    # =========================
-    polkit_gnome
-    libsecret
-    gnome-keyring
-    seahorse
-
-    # =========================
-    # 🔋 System / Hardware
-    # =========================
-    power-profiles-daemon
-    lm_sensors
-    cpu-x
-    mission-center
-    solaar
-
-    # Networking UI
-    networkmanagerapplet
-    blueman
-
-    # =========================
-    # 🧰 Utilities
-    # =========================
-    bitwarden-desktop
-    bleachbit
-    localsend
-    unzip
-    wget
-    yt-dlp
-    qbittorrent
-
-    # GNOME helpers (no DE)
-    gnome-disk-utility
-    gnome-calculator
-
-    # =========================
-    # 💻 Terminal / CLI
-    # =========================
-    kitty
-    alacritty
-    wezterm
-    btop
-    fastfetch
-    fzf
+    # ─── Core CLI / Shell ─────────────────────────
     zsh
     starship
+    fzf
+    btop
+    fastfetch
+    unzip
+    wget
+    git
+    ripgrep
+    neovim
+    yt-dlp
+    xclip
+    kitty
+    psmisc        # killall
+    procps        # pgrep, pkill
+    vscode
+    bc            # CLI calculator
+
+    # ─── Web Browsers ─────────────────────────────
+    firefox
+    vivaldi
+    microsoft-edge
+
+    # ─── Window Manager / Desktop Core ────────────
+    dmenu
+    rofi
+    # UPDATED: Polybar with PulseAudio support for PipeWire compatibility
+    (polybar.override {
+      pulseSupport = true;
+    })
+    xmobar
+    sxhkd
+    dunst
+    libnotify
+    xdotool
+    xev
+    arandr
+    nwg-look
+    xwallpaper
+    nitrogen
+    pywal
+    feh
+
+    picom-jonaburg
+
+    # ─── Session / Autostart Helpers ──────────────
+    polkit_gnome
+    copyq
+    volumeicon
+    blueman
+    flameshot
+    conky
+
+    # ─── File Management ──────────────────────────
+    thunar
+    thunar-archive-plugin
+    thunar-volman
+    engrampa
+
+    # ─── Networking / Sync ────────────────────────
+    rclone
+    rclone-browser
+    networkmanagerapplet
+
+    # ─── Audio / Hardware ─────────────────────────
+    alsa-utils
+    pavucontrol
+    pamixer
+    brightnessctl
+    lm_sensors
+    solaar
+    cava
+
+    # ─── Performance / Monitoring ─────────────────
+    (linuxPackages.cpupower or pkgs.cpupower)
+    sysstat
+    redshift
+    mission-center
+    nvme-cli
+    xfce4-power-manager
+
+    # ─── Nix / System Tooling ─────────────────────
+    cachix
+    p3x-onenote
+    python3
   ];
 }

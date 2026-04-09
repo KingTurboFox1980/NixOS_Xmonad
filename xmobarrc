@@ -43,6 +43,6 @@ Config {
     , sepChar = "%"
     , alignSep = "}{"
     -- Template structure: |<time> <workspace/window>}{<date>
-    , template = "%myButton%|<box type=Bottom width=2 mb=2 color=#FF9580><fc=#FF9580>%time%</fc></box> %UnsafeStdinReader%}{<box type=Bottom width=2 mb=2 color=#9580FF><fc=#9580FF>%date%</fc></box> "
+    , template = "%myButton%|<box type=Bottom width=2 mb=2 color=#FF80BF><fc=#FF80BF>%time%</fc></box> %UnsafeStdinReader%}{<box type=Bottom width=2 mb=2 color=#9580FF><fc=#9580FF>%date%</fc></box> "
 
   }

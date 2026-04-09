@@ -1,26 +1,24 @@
 --[[
-  Conky Configuration
-  Updated: Disk heading color matches Network heading (default color).
-  Top Processes title corrected, and disk labels recolored for consistency.
-  The first monitored disk is now /home/j3ll0/ instead of /nix/store.
+  GMKtec K10 - Full System Overview (Original Content + Frosted)
 --]]
 
 conky.config = {
     -- 🤖 Core Settings
     background = true,
-    update_interval = 0.25, -- Very fast refresh rate (250ms)
+    update_interval = 0.25,
     cpu_avg_samples = 1,
     net_avg_samples = 2,
     double_buffer = true,
     no_buffers = true,
     imlib_cache_size = 0,
 
-    -- 🧊 Window Behavior
+    -- 🧊 Window Behavior (FROSTED)
     own_window = true,
-    own_window_type = 'override',
-    own_window_transparent = true,
+    own_window_type = 'dock',
+    own_window_transparent = false,
     own_window_argb_visual = true,
-    own_window_argb_value = 200,
+    own_window_argb_value = 210,
+    own_window_colour = '#282A36',
     own_window_hints = 'undecorated,below,sticky,skip_taskbar,skip_pager',
     own_window_title = 'system_conky',
 
@@ -33,14 +31,14 @@ conky.config = {
     minimum_height = 300,
     maximum_height = 850,
 
-    -- 🎨 Visuals
+    -- 🎨 Graphics
     draw_borders = false,
     draw_graph_borders = true,
     draw_shades = false,
     draw_outline = false,
     border_width = 0,
 
-    -- 🔤 Fonts & Text
+    -- 🔤 Fonts
     use_xft = true,
     xftalpha = 1,
     xft_font_path = '/home/j3ll0/.local/share/fonts/',
@@ -49,67 +47,70 @@ conky.config = {
     format_human_readable = true,
     short_units = true,
 
-    -- 🎨 Custom Colors (used by name in conky.text)
-    default_color = 'FF0000',     -- Red (Matches Network/Disks headers)
-    color1 = '#05FFA1',           -- Neon Green
-    color2 = '#BD93F9',           -- Light Purple (Used for data labels)
-    color3 = '#9580FF',           -- Dark Purple
-    color4 = '#FFFF80',           -- Yellow
-    color5 = '#9580FF',           -- Pink
-    color6 = '#AA0000',           -- Deep Red
-    color7 = '#FF80BF',           -- Pink-ish Yellow
-    color8 = '#6F9EB2',           -- Cyan
-    color9 = '#01BAB4',           -- Green
-    color10 = '#FFA726',          -- Orange (Used for Disk bars)
-    color11 = '#F1544B',          -- Firebrick
+    -- 🎨 Colours (Original Palette)
+    default_color = 'FF0000',
+    color1 = '#05FFA1',
+    color2 = '#BD93F9',
+    color3 = '#9580FF',
+    color4 = '#FFFF80',
+    color5 = '#9580FF',
+    color6 = '#AA0000',
+    color7 = '#FF80BF',
+    color8 = '#6F9EB2',
+    color9 = '#01BAB4',
+    color10 = '#FFA726',
+    color11 = '#F1544B',
 }
 
 conky.text = [[
 ${font Space Age:size=30}${color3}${alignc}${time %I:%M:%S %p}
 ${font Space Age:size=12}${voffset -20}${alignc}${time %A, %B %d}
 ${font Orbitron:size=10}
-# 🟣 P-Cores
-${color3}P-Cores ${color3}${hr}
-${color3}${cpugraph cpu1 25,170} ${alignr}${cpugraph cpu2 25,170}
-${color3}${cpugraph cpu3 25,170} ${alignr}${cpugraph cpu4 25,170}
-${color3}${cpugraph cpu5 25,170} ${alignr}${cpugraph cpu6 25,170}
-${color3}${cpugraph cpu7 25,170} ${alignr}${cpugraph cpu8 25,170}
-${color3}${cpugraph cpu9 25,170} ${alignr}${cpugraph cpu10 25,170}
-${color3}${cpugraph cpu11 25,170} ${alignr}${cpugraph cpu12 25,170}
-# 🟢 E-Cores
-${color9}E-Cores ${color9}${hr}
-${color9}${cpugraph cpu13 25,170} ${alignr}${cpugraph cpu14 25,170}
-${color9}${cpugraph cpu15 25,170} ${alignr}${cpugraph cpu16 25,170}
-${color9}${cpugraph cpu17 25,170} ${alignr}${cpugraph cpu18 25,170}
-${color9}${cpugraph cpu19 25,170} ${alignr}${cpugraph cpu20 25,170}
 
-# CPU Overview
-${color2}CPU Freq: ${color3}${freq}MHz ${alignr}${color2}TEMP: ${color3}${execi 5 sensors | grep 'Package id 0:' | awk '{print $4}'}
-${color7}${cpugraph 40,350}
-# 🧠 Memory
-${color2}RAM: ${color1}${mem} / ${memmax} ${alignr}${color3}${memperc}%
-${color7}${memgraph 40,350}
+# 🟣 P-CORES (6 Cores / 12 Threads)
+${color3}P-Cores${hr}
+# Core 1 (0/1)              Core 2 (2/3)
+${cpugraph cpu0 40,85 9580FF 4D4080}${cpugraph cpu1 40,85 9580FF 4D4080} ${alignr}${cpugraph cpu2 40,85 9580FF 4D4080}${cpugraph cpu3 40,85 9580FF 4D4080}
+# Core 3 (4/5)              Core 4 (6/7)
+${cpugraph cpu4 40,85 9580FF 4D4080}${cpugraph cpu5 40,85 9580FF 4D4080} ${alignr}${cpugraph cpu6 40,85 9580FF 4D4080}${cpugraph cpu7 40,85 9580FF 4D4080}
+# Core 5 (8/9)              Core 6 (10/11)
+${cpugraph cpu8 40,85 9580FF 4D4080}${cpugraph cpu9 40,85 9580FF 4D4080} ${alignr}${cpugraph cpu10 40,85 9580FF 4D4080}${cpugraph cpu11 40,85 9580FF 4D4080}
+
+# 🟢 E-CORES (8 Cores / 8 Threads)
+${color9}E-Cores${hr}
+${cpugraph cpu12 40,85 01BAB4 004444}${cpugraph cpu13 40,85 01BAB4 004444} ${alignr}${cpugraph cpu14 40,85 01BAB4 004444}${cpugraph cpu15 40,85 01BAB4 004444}
+${cpugraph cpu16 40,85 01BAB4 004444}${cpugraph cpu17 40,85 01BAB4 004444} ${alignr}${cpugraph cpu18 40,85 01BAB4 004444}${cpugraph cpu19 40,85 01BAB4 004444}
+
+# ⚡ CPU Stats (Orange)
+${color #FF9580}Freq: ${freq}MHz ${alignr}Usage: ${cpu cpu0}%
+${cpugraph cpu0 40,350 FF9580 805045}
+# CPU Overview (Temp)
+${color #FF80BF}TEMP: ${execi 1 awk '{printf "%.1f°C",$1/1000}' /sys/class/hwmon/hwmon5/temp1_input}
+${execigraph 1 "awk '{print $1/1000}' /sys/class/hwmon/hwmon5/temp1_input" 40,350 FF80BF 884466}
+# 🧠 Memory (Purple)
+${color #9580FF}RAM: ${mem} / ${memmax} ${alignr}${memperc}%
+${memgraph 40,350 9580FF 4D4080}
 
 # 🔍 Top 5 Processes (Memory)
-${color2}Top 5 Processes${goto 222}cpu%${goto 274}mem%${color8}
-${voffset 4}    1 - ${top_mem name 1}${alignr}${goto 222}${top_mem cpu 1} ${goto 274}${top_mem mem 1}
-    2 - ${top_mem name 2}${alignr}${goto 222}${top_mem cpu 2} ${goto 274}${top_mem mem 2}
-    3 - ${top_mem name 3}${alignr}${goto 222}${top_mem cpu 3} ${goto 274}${top_mem mem 3}
-    4 - ${top_mem name 4}${alignr}${goto 222}${top_mem cpu 4} ${goto 274}${top_mem mem 4}
-    5 - ${top_mem name 5}${alignr}${goto 222}${top_mem cpu 5} ${goto 274}${top_mem mem 5}
+${color2}Top 5 Processes${goto 210}cpu%${goto 290}mem%
+${voffset 4}${color8}  1 - ${top_mem name 1 15}${goto 210}${top_mem cpu 1}${goto 290}${top_mem mem 1}
+  2 - ${top_mem name 2 15}${goto 210}${top_mem cpu 2}${goto 290}${top_mem mem 2}
+  3 - ${top_mem name 3 15}${goto 210}${top_mem cpu 3}${goto 290}${top_mem mem 3}
+  4 - ${top_mem name 4 15}${goto 210}${top_mem cpu 4}${goto 290}${top_mem mem 4}
+  5 - ${top_mem name 5 15}${goto 210}${top_mem cpu 5}${goto 290}${top_mem mem 5}
 
 # 💾 Disk Usage
 ${color2}nVME${hr}
 ${color8}HOME (${fs_used /home/j3ll0/} / ${fs_size /home/j3ll0/})${alignr}${color8}${fs_used_perc /home/j3ll0/}%
-${fs_bar 5,350 /home/j3ll0/}
+${fs_bar 10,350 /home/j3ll0/}
 ${color4}DATA (${fs_used /mnt/data} / ${fs_size /mnt/data})${alignr}${color4}${fs_used_perc /mnt/data}%
-${fs_bar 5,350 /mnt/data}
+${fs_bar 10,350 /mnt/data}
 
 # 🌐 Network
 ${color2}Network ${color3}${hr}
-${color1}Total Down: ${color1}${totaldown enp4s0} ${alignr}${color6}Total Up: ${color6}${totalup enp4s0}
-${color1}${downspeedgraph enp4s0 30,170} ${alignr}${color6}${upspeedgraph enp4s0 30,170}
-${color1}Download: ${downspeed enp4s0}${alignr}${color6}Upload: ${upspeed enp4s0}
+${color9}Total Down: ${totaldown enp4s0} ${alignr}${color6}Total Up: ${totalup enp4s0}
+${color9}${downspeedgraph enp4s0 50,170 01BAB4 004444} ${alignr}${color6}${upspeedgraph enp4s0 50,170 AA0000 440000}
+${color9}Download: ${downspeed enp4s0}${alignr}${color6}Upload: ${upspeed enp4s0}
 
 # ⏱️ Uptime
 ${font Space Age:size=15}${color2}Uptime: ${color3}${alignr}${uptime}
