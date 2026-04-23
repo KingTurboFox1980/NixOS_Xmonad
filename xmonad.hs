@@ -6,17 +6,18 @@
 {-# OPTIONS_GHC -XOverloadedStrings #-}
 {-# OPTIONS_GHC -XLambdaCase #-}
 
--- DRACULA COLOR THEME = Line 151 --
--- KEYBINDINGS = Line 502 --
--- SCRATCHPADS = Line 296 / 580 --
--- XMOBAR = Line 398 -- 
+-- DRACULA COLOR THEME = Line 159 --
+-- KEYBINDINGS = Line 528 --
+-- SCRATCHPADS = Line 305 / 617 --
+-- XMOBAR = Line 407 -- 
 
 --------------------------
 -- | XMonad Configuration
 --------------------------
 
 -- System & Base
-import System.IO
+import Data.List (isInfixOf)
+import System.IO (Handle, hPutStrLn)
 import Graphics.X11.ExtraTypes.XF86
 import Graphics.X11.Xlib.Extras (getWindowProperty32)
 import Control.Monad (liftM2)
@@ -25,10 +26,14 @@ import qualified Data.Map as M
 import qualified XMonad.StackSet as W
 import qualified Codec.Binary.UTF8.String as UTF8
 import XMonad
+import XMonad (ScreenId(..))
+import XMonad (screenWorkspace, windows, whenJust)
 
 -- Actions
+import XMonad.Actions.DynamicWorkspaces (addWorkspace)
 import XMonad.Actions.SpawnOn
 import XMonad.Actions.CycleWS              -- Required for toggleWS, prevWS, shiftToNext/Prev
+import XMonad.Actions.PhysicalScreens
 import XMonad.Actions.DwmPromote
 import XMonad.Actions.OnScreen
 import XMonad.Actions.GridSelect
@@ -40,10 +45,11 @@ import XMonad.Actions.MouseResize
 
 -- Hooks
 import XMonad.Hooks.DynamicLog (dynamicLogWithPP, wrap, xmobarPP, xmobarColor, shorten, PP(..))
-import XMonad.Hooks.ManageDocks (docks, manageDocks, avoidStruts)
+import XMonad.Hooks.ManageDocks (manageDocks, docks, avoidStruts, docksEventHook)
 import XMonad.Hooks.ManageHelpers (doRectFloat, doCenterFloat, isDialog, isFullscreen, doFullFloat, doLower)
 import XMonad.Hooks.SetWMName
 import XMonad.Hooks.UrgencyHook
+import XMonad.Util.Run(spawnPipe)
 import XMonad.Hooks.EwmhDesktops (ewmh, ewmhFullscreen, fullscreenEventHook)
 import XMonad.ManageHook
 import XMonad.Config.Desktop (desktopConfig) -- For myBaseConfig
@@ -51,6 +57,7 @@ import XMonad.Hooks.WorkspaceHistory
 import XMonad.Hooks.WindowSwallowing
 
 -- Layouts
+import XMonad.Layout.IndependentScreens (marshallPP)
 import XMonad.Layout.Spacing
 import XMonad.Layout.PerWorkspace (onWorkspace)
 import XMonad.Layout.Gaps
@@ -82,6 +89,7 @@ import XMonad.Util.ClickableWorkspaces (clickablePP)
 import XMonad.Util.NamedScratchpad
 import XMonad.Util.NamedWindows (getName)
 import XMonad.Util.Run (safeSpawn)
+import XMonad.Util.WorkspaceCompare
 
 import Data.List (isInfixOf)
 
@@ -202,7 +210,7 @@ myTheme = def
 
 -- Workspaces
 myWorkspaces :: [String]
-myWorkspaces    = ["❶ HOME ❶","❷ VM ❷","❸ E-MAIL ❸","❹ WEB ❹","❺ CODE ❺","❻ TORRENT ❻","❼ OTHER ❼","❽ MEDIA ❽","❾ FILES ❾"]
+myWorkspaces = ["1 HOME", "2 VM", "3 MAIL", "4 WEB", "5 CODE", "6 TOR", "7 OTHER", "8 MEDIA", "9 FILES", "0 MISC"]
 
 myBaseConfig = desktopConfig
 
@@ -251,6 +259,7 @@ myManageHook = composeAll . concat $
     , [ className =? c --> doCenterFloat | c <- myCFloats ]
     , [ title     =? t --> doFloat       | t <- myTFloats ]
     , [ resource  =? r --> doFloat       | r <- myRFloats ]
+    , [ className =? "floatterm" --> doRectFloat (W.RationalRect 0.2 0.2 0.6 0.6) ]
     
       -- 3. XFCE / Thunar Specific Dialog Fixes
     , [ (className =? "thunar-scratchpad" <&&> title =? "File Operation Progress") --> doRectFloat (W.RationalRect 0.35 0.45 0.3 0.1) ]
@@ -267,16 +276,16 @@ myManageHook = composeAll . concat $
   where
     -- Your central "Brain" for workspace assignments
     myWorkMap =
-        [ ("❶ HOME ❶",    [])
-        , ("❷ VM ❷",      [".virt-manager-wrapped"])
-        , ("❸ E-MAIL ❸",  ["Org.gnome.Evolution", "eu.betterbird.Betterbird"])
-        , ("❹ WEB ❹",     ["Chromium", "Vivaldi-stable", "Firefox", "floorp", "Navigator"])
-        , ("❺ CODE ❺",    ["code", "Code", "kate", "geany", "Geany"])
-        , ("❻ TORRENT ❻", ["qBittorrent"])
-        , ("❼ OTHER ❼",   [])
-        , ("❽ MEDIA ❽",   ["vlc", "io.github.celluloid_player.Celluloid", "VacuumTube", "freetube", "red-app", "mpv", "tartube", "Totem", "glide"])
-        , ("❾ FILES ❾",   ["Thunar", "rclone-browser", "xfce.thunar", "xfce.thunar-archive-plugin", "xfce.thunar-volman"])
-        , ("OTHER",       ["discord"])
+        [ ("1 HOME",    [])
+        , ("2 VM",      [".virt-manager-wrapped"])
+        , ("3 MAIL",    ["Org.gnome.Evolution", "eu.betterbird.Betterbird", "Mail"])
+        , ("4 WEB",     ["Chromium", "Vivaldi-stable", "Firefox", "floorp", "Navigator"])
+        , ("5 CODE",    ["code", "Code", "kate", "geany-bin", "Geany-bin"])
+        , ("6 TOR",     ["qBittorrent"])
+        , ("7 OTHER",   [])
+        , ("8 MEDIA",   ["vlc", "io.github.celluloid_player.Celluloid", "mpv"])
+        , ("9 FILES",   ["Thunar", "rclone-browser"])
+        , ("0 MISC",    ["discord"])
         ]
 
     -- Apps that should always float
@@ -395,54 +404,11 @@ myLayout =
             )
 
 ------------------------------------------------------------------------
--- Log Hook / Xmobar
+-- Log Hook / Xmobar (Dual Monitor Support)
 ------------------------------------------------------------------------
-myXmobarCommand :: String
-myXmobarCommand = "xmobar ~/.config/xmobar/xmobarrc"
 
--- Pretty-printer for xmobar
-myPPBase :: Handle -> PP
-myPPBase h = xmobarPP
-  { ppOutput = hPutStrLn h
-
-  -- Workspaces
-  , ppCurrent = xmobarColor dracBlack dracPurple2 . wrap " " " "
-  , ppVisible = xmobarColor dracOrange "" . wrap "(" ")"
-  , ppHidden = xmobarColor dracGray "" . wrap " " " "
-  , ppHiddenNoWindows = const ""
-
-  -- Urgent workspace: Red alert bell
-  , ppUrgent = xmobarColor "#FFFF80" dracRed . wrap " 🔔 " " 🔔 "
-
-  -- Window title: Changed to Dracula Orange as requested
-  , ppTitle = xmobarColor dracOrange "" . shorten 80
-
-  -- Layout Renaming
-  , ppLayout = xmobarColor dracGray "" . (\x -> case x of
-                          l | "Tabbed" `isInfixOf` l -> " [TAB] "
-                          l | "Full"   `isInfixOf` l -> " [FUL] "
-                          l | "Tall"   `isInfixOf` l -> " [TAL] "
-                          l | "ThreeCol" `isInfixOf` l -> " [3COL]"
-                          l | "Spiral" `isInfixOf` l -> " [SPRL]"
-                          l | "multiCol" `isInfixOf` l -> " [MCOL]"
-                          _ -> " " ++ x ++ " "
-                      )
-
-  -- Separators
-  , ppSep = xmobarColor dracGray "" " | "
-
-  -- Extras (Window Count) - kept orange as it fits well
-  , ppExtras = [ fmap (fmap (xmobarColor dracOrange "")) windowCount ]
-
-  -- Order: [WindowCount] [Workspaces] [Layout Icon] [Window Title]
-  , ppOrder = \(ws:l:t:ex) -> ex ++ [ws, l, t]
-  }
-
--- Log hook (clickable workspaces + xmobar)
-myLogHook :: Handle -> X ()
-myLogHook h = clickablePP (myPPBase h) >>= dynamicLogWithPP
-
--- Window count for current workspace
+-- 1. Window count for current workspace
+-- IMPORTANT: Must be at the top level (no indentation) so other functions can see it.
 windowCount :: X (Maybe String)
 windowCount =
   gets $
@@ -456,6 +422,51 @@ windowCount =
     . W.workspace
     . W.current
     . windowset
+
+-- 2. Pretty-printer for both xmobar instances
+myPPBase :: Handle -> Handle -> PP
+myPPBase h0 h1 = xmobarPP
+  { ppOutput = \s -> hPutStrLn h0 s >> hPutStrLn h1 s
+
+  -- Workspaces
+  -- Current = Active workspace on focused monitor
+  -- Visible = Active workspace on unfocused monitor (the second screen)
+  , ppCurrent = xmobarColor dracBlack dracPurple2 . wrap " " " "
+  , ppVisible = xmobarColor dracOrange "" . wrap "(" ")"
+  , ppHidden  = xmobarColor dracGray "" . wrap " " " "
+  , ppHiddenNoWindows = const ""
+
+  -- Urgent workspace
+  , ppUrgent = xmobarColor "#FFFF80" dracRed . wrap " 🔔 " " 🔔 "
+
+  -- Window title
+  , ppTitle = xmobarColor dracOrange "" . shorten 80
+
+  -- Layout renaming 
+  , ppLayout = xmobarColor dracGray "" . (\x -> case x of
+                          l | "Tabbed"   `isInfixOf` l -> " [TAB] "
+                          l | "Full"     `isInfixOf` l -> " [FUL] "
+                          l | "Tall"     `isInfixOf` l -> " [TAL] "
+                          l | "ThreeCol" `isInfixOf` l -> " [3COL]"
+                          l | "Spiral"   `isInfixOf` l -> " [SPRL]"
+                          l | "multiCol" `isInfixOf` l -> " [MCOL]"
+                          l | "Spacing"  `isInfixOf` l -> " " ++ drop 8 l ++ " " 
+                          _ -> " " ++ x ++ " "
+                      )
+
+  -- Separators
+  , ppSep = xmobarColor dracGray "" " | "
+
+  -- Extras (window count)
+  , ppExtras = [fmap (fmap (xmobarColor dracOrange "")) windowCount]
+
+  -- Order: [WindowCount] [Workspaces] [Layout] [Title]
+  , ppOrder = \(ws:l:t:ex) -> ex ++ [ws, l, t]
+  }
+
+-- 3. Log hook that sends data to both xmobar bars
+myLogHook :: Handle -> Handle -> X ()
+myLogHook h0 h1 = clickablePP (myPPBase h0 h1) >>= dynamicLogWithPP
 
 ------------------------------------------------------------------------
 -- App Grid
@@ -488,15 +499,31 @@ myStartupHook = do
     setWMName "LG3D"
 
 ------------------------------------------------------------------------
--- Move Windows Between Monitors --
+-- Move Windows Between Monitors
 ------------------------------------------------------------------------
+
+-- Move focused window to a specific screen
 shiftToScreen :: ScreenId -> X ()
 shiftToScreen sc = do
-  ws <- gets windowset
-  case lookup sc $ zip [0 ..] (W.screens ws) of
-    Just screen -> windows $ W.shift (W.tag $ W.workspace screen)
-    Nothing     -> return ()
+  ws <- gets windowset
+  case lookup sc $ zip [0 ..] (W.screens ws) of
+    Just screen -> windows $ W.shift (W.tag $ W.workspace screen)
+    Nothing     -> return ()
 
+shiftToScreenAndView :: ScreenId -> X ()
+shiftToScreenAndView sc = do
+  shiftToScreen sc
+  screenWorkspace sc >>= flip whenJust (windows . W.view)
+
+-- Move focused window to the other monitor and switch focus to it
+-- Useful for Super + Tab on dual monitor setup
+shiftToOtherScreenAndView :: X ()
+shiftToOtherScreenAndView = do
+    cur <- gets (W.screen . W.current . windowset)
+    let target = if cur == 0 then 1 else 0
+    screenWorkspace (S target) >>= flip whenJust (windows . W.shift)
+    screenWorkspace (S target) >>= flip whenJust (windows . W.view)
+    
 ------------------------------------------------------------------------
 -- Key Bindings
 ------------------------------------------------------------------------
@@ -506,8 +533,9 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
     -- SUPER + FUNCTION KEYS
     [ ((modMask .|. shiftMask, xK_f), sendMessage $ Toggle NBFULL)
     , ((modMask, xK_q), kill )
-    , ((modMask, xK_r), spawn $ "rclone-browser" )
-    , ((modMask, xK_d), spawn $ "exec ~/.config/scripts/dmenu.sh" )
+    , ((modMask, xK_r), spawn $ "$HOME/.config/scripts/onedrive-mount.sh" )
+    , ((modMask .|. controlMask, xK_r), spawn $ "rclone-browser" )
+    , ((modMask, xK_d), spawn $ "~/.config/scripts/dmenu.sh" )
     , ((0, xK_F10), spawn "polybar-msg cmd toggle" )
     --, ((modMask, xK_F1), spawn $ "vivaldi-stable" )
     , ((modMask, xK_F7), spawn $ "virt-manager" )
@@ -517,26 +545,26 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
     , ((0, xF86XK_Calculator), spawn $ "flatpak run org.gnome.Calculator" )
     -- , ((modMask, xK_o), spawn $ "p3x-onenote" )
     , ((modMask, xK_c), spawn $ "code" )
-    -- , ((modMask, xK_e), spawn $ "exec evolution" ) -- commented out 'e' to avoid conflict with 'atom'
-    , ((modMask, xK_b), spawn $ "exec flatpak run eu.betterbird.Betterbird" )
+    -- , ((modMask, xK_e), spawn $ "evolution" ) -- commented out 'e' to avoid conflict with 'atom'
+    , ((modMask, xK_b), spawn $ "flatpak run eu.betterbird.Betterbird" )
     , ((modMask, xK_g), spawn $ "flatpak run org.geany.Geany" )
     --, ((modMask, xK_w), spawn $ "vivaldi" )
-    , ((modMask, xK_space), spawn $ "exec ~/.config/rofi/launchers/type-6/launcher.sh" )
+    , ((modMask, xK_space), spawn $ "~/.config/rofi/launchers/type-6/launcher.sh" )
     --, ((modMask .|. shiftMask , xK_w ), spawn $ "flatpak run com.microsoft.Edge" )
     , ((modMask, xK_x), spawn $ "~/.config/scripts/powermenu/powermenu.sh" )
     -- , ((modMask, xK_Return), spawn $ "kitty" )
     , ((modMask, xK_Escape), spawn $ "missioncenter" )
 
     -- Hardware HUD Toggle (Keypad Enter)
-    , ((0, xK_KP_Enter), spawn "~/.config/xmonad/scripts/toggle_conky.sh")
+    , ((0, xK_KP_Subtract), spawn "~/.config/xmonad/scripts/toggle_conky.sh")
    
     -- *** RESTORED SCRIPT KEYBINDINGS ***
-    , ((0, xK_KP_Subtract), spawn $ "exec ~/.config/scripts/shortcut_key_scripts.sh" ) 
-    , ((modMask, xK_KP_Subtract), spawn $ "exec kitty -e ~/nix_update.sh" )
-    , ((modMask, xK_p), spawn $ "exec ~/.config/polybar/launch.sh" )              
-    , ((0, xK_KP_Add), spawn $ "exec ~/.config/scripts/wallpaper.sh" )               
-    , ((modMask, xK_KP_Add), spawn $ "exec ~/.config/scripts/select_wallpaper_pywal.sh" ) 
-    , ((0, xK_KP_Multiply), spawn $ "exec ~/.config/scripts/help.sh")
+    -- , ((0, xK_KP_Subtract), spawn $ "~/.config/scripts/shortcut_key_scripts.sh" ) 
+    , ((modMask, xK_KP_Subtract), spawn "kitty --class floatterm -e ~/nix_update.sh")
+    , ((modMask, xK_p), spawn $ "~/.config/polybar/launch.sh" )              
+    , ((0, xK_KP_Add), spawn $ "~/.config/scripts/wallpaper.sh" )               
+    , ((modMask, xK_KP_Add), spawn $ "~/.config/scripts/select_wallpaper_pywal.sh" ) 
+    , ((0, xK_KP_Multiply), spawn $ "~/.config/scripts/help.sh")
     
     -- *** GAP CONTROL KEYBINDINGS ***
     , ((0, xK_KP_Divide), incWindowSpacing 2)           
@@ -544,40 +572,51 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
     , ((modMask, xK_KP_Divide), setWindowSpacing (Border 0 0 0 0)) 
 
     --, ((modMask, xK_t), spawn $ "thunar" )
-    , ((shiftMask, xK_KP_Multiply), spawn $ "exec ~/.config/polybar/scripts/keyhintvim.sh")
-    , ((0, xK_F9), spawn $ "exec ~/.config/scripts/redshift.sh" )
-    , ((0, xK_F6), spawn $ "exec ~/.config/scripts/screenoff.sh" )
-    , ((modMask, xK_s), spawn $ "exec ~/.config/scripts/dmenu-websearch.sh" )
+    , ((modMask, xK_KP_Multiply), spawn $ "~/.config/polybar/scripts/keyhintvim.sh")
+    , ((0, xK_F9), spawn $ "~/.config/scripts/redshift.sh" )
+    , ((0, xK_F6), spawn $ "~/.config/scripts/screenoff.sh" )
+    , ((modMask, xK_s), spawn $ "~/.config/scripts/dmenu-websearch.sh" )
 
     -- ----------------------------------------------------------------------
     -- ** NEW CYCLEWS & FOLLOW BINDINGS **
     -- ----------------------------------------------------------------------
-
-    -- Toggle Workspace (Mod + Backtick)
-    , ((modMask, xK_grave), toggleWS)
-
-    -- Cycle Previous Workspace (Mod + Shift + Tab)
-    , ((modMask .|. shiftMask, xK_Tab), prevWS)
 
     -- Shift Window to Next Workspace and Follow (Mod + Ctrl + J)
     , ((modMask .|. controlMask, xK_j), shiftToNext >> nextWS)
 
     -- Shift Window to Previous Workspace and Follow (Mod + Ctrl + K)
     , ((modMask .|. controlMask, xK_k), shiftToPrev >> prevWS)
-
-    , ((modMask .|. shiftMask, xK_Tab), prevWS)
     
     , ((mod1Mask, xK_Tab), nextWS)
-    
-    , ((modMask, xK_Tab), nextWS)
 
+    -- -------------------------------
+    -- Workspace navigation 
+    -- -------------------------------
+
+    -- Next / Prev workspace
+    , ((mod1Mask, xK_Tab), nextWS)
+    , ((mod1Mask .|. shiftMask, xK_Tab), prevWS)
+
+    -- Toggle last workspace
+    , ((modMask, xK_grave), toggleWS)
+
+    -- Move window + follow
     , ((modMask .|. controlMask, xK_j), shiftToNext >> nextWS)
-
     , ((modMask .|. controlMask, xK_k), shiftToPrev >> prevWS)
 
+    -- -------------------------------
+    -- Screen navigation (DUAL MONITOR MAGIC)
+    -- -------------------------------
+
+    -- Focus other screen
+    , ((0, xK_KP_Enter), onNextNeighbour def W.shift >> nextScreen)
+
+    -- Move window to other screen + follow it
+    , ((modMask .|. shiftMask, xK_Tab), shiftNextScreen >> nextScreen)
+
     -- ----------------------------------------------------------------------
--- ** Scratchpads **
--- ----------------------------------------------------------------------
+    -- ** Scratchpads **
+    -- ----------------------------------------------------------------------
     , ((myModMask, xK_Return), namedScratchpadAction myScratchpads "terminal")
     , ((myModMask, xK_F12), namedScratchpadAction myScratchpads "mixer")
     , ((myModMask .|. shiftMask, xK_grave), namedScratchpadAction myScratchpads "notes")
@@ -626,8 +665,6 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
     , ((0, xF86XK_AudioPrev), spawn $ "playerctl previous")
     , ((0, xF86XK_AudioStop), spawn $ "playerctl stop")
     -- XMONAD LAYOUT KEYS (Keep your existing cycle keys)
-    , ((mod1Mask, xK_Tab), nextWS)
-    , ((modMask, xK_Tab), nextWS)
     , ((controlMask .|. mod1Mask , xK_Left ), prevWS)
     , ((controlMask .|. mod1Mask , xK_Right ), nextWS)
     , ((modMask .|. shiftMask, xK_space), setLayout $ XMonad.layoutHook conf)
@@ -642,7 +679,8 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
     ++
     -- Workspace Switching: Mod + Num = View; Mod + Shift + Num = Move & Follow
     [((m .|. modMask, k), windows $ f i)
-      | (i, k) <- zip (XMonad.workspaces conf) [xK_1,xK_2,xK_3,xK_4,xK_5,xK_6,xK_7,xK_8,xK_9]
+      | (i, k) <- zip (XMonad.workspaces conf)
+      [xK_1,xK_2,xK_3,xK_4,xK_5,xK_6,xK_7,xK_8,xK_9,xK_0]
       , (f, m) <- [(W.greedyView, 0), (shiftAndFollowKey, shiftMask)]] -- Corrected function used here
 
     ++
@@ -675,23 +713,30 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
 mySwallowHook = swallowEventHook (className =? "kitty") (return True)
 
 ------------------------------------------------------------------------
--- Main Function
+-- Main Function (Both Polybar + Xmobar)
 ------------------------------------------------------------------------
 main :: IO ()
 main = do
-    -- Launch xmobar
-    xmproc <- spawnPipe myXmobarCommand
+    -- 1. Launch Polybar (Ensure launch.sh handles multiple monitors)
+    spawn "sh ~/.config/polybar/launch.sh"
+
+    -- 2. Spawn Xmobar Pipes
+    -- We use '-x' to explicitly target screen indices.
+    xmproc0 <- spawnPipe "xmobar -x 0 ~/.config/xmobar/xmobarrc"
+    -- A tiny sleep ensures X11 doesn't get confused by two identical binaries starting at once
+    xmproc1 <- spawnPipe "sleep 1 && xmobar -x 1 ~/.config/xmobar/xmobarrc"
 
     xmonad
       . withUrgencyHook LibNotifyUrgencyHook
       . ewmhFullscreen
       . ewmh
+      . docks
       $ myBaseConfig
           { startupHook = myStartupHook
 
-          , logHook =
-                workspaceHistoryHook
-            <+> myLogHook xmproc
+          , logHook = 
+                workspaceHistoryHook 
+            <+> myLogHook xmproc0 xmproc1 -- Using the dual-handle hook below
 
           , layoutHook =
                 showWName' myShowWNameTheme
@@ -702,23 +747,24 @@ main = do
               $ myLayout
                 ||| layoutHook myBaseConfig
 
-          , manageHook = 
-               myManageHook                         -- 1. Check for "Progress" title first
-           <+> namedScratchpadManageHook myScratchpads  -- 2. Then apply the "Big" scratchpad size
+          , manageHook =
+                myManageHook
+           <+> namedScratchpadManageHook myScratchpads
            <+> manageSpawn
+           <+> manageDocks
            <+> manageHook myBaseConfig
 
           , handleEventHook =
                 windowedFullscreenFixEventHook
-            <+> mySwallowHook              -- <--- Added Window Swallowing here
+            <+> mySwallowHook
             <+> handleEventHook myBaseConfig
 
-          , modMask            = myModMask
-          , borderWidth        = myBorderWidth
-          , focusFollowsMouse  = myFocusFollowsMouse
-          , workspaces         = myWorkspaces
+          , modMask = myModMask
+          , borderWidth = myBorderWidth
+          , focusFollowsMouse = myFocusFollowsMouse
+          , workspaces = myWorkspaces
           , focusedBorderColor = focdBord
-          , normalBorderColor  = normBord
-          , keys               = myKeys
-          , mouseBindings      = myMouseBindings
+          , normalBorderColor = normBord
+          , keys = myKeys
+          , mouseBindings = myMouseBindings
           }

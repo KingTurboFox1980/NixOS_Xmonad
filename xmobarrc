@@ -1,15 +1,19 @@
-Config {
-    -- 1. Primary Font (fn=0) for all text and workspace names
-      font            = "GeistMono NF UltraBlack 15"
-    
+Config { 
+
+    -- 1. Primary Font (fn=0)
+    font = "Cascadia Code 15"
+
     -- 2. Additional Fonts
-    -- fn=1: MesloLGS NF (The powerful Nerd Font for all icons/glyphs)
-    -- fn=2: Inter (Good general-purpose fallback)
+    -- fn=1: Meslo (Icons)
+    -- fn=2: Inter (Fallback)
+    -- fn=3: Cascadia Code (Time - BUMPED to 20 for visibility)
+    -- fn=4: GeistMono (Date - BUMPED to 17)
     , additionalFonts = [ "MesloLGS NF 15"
                         , "Inter 15"
+                        , "Cascadia Code 20"
+                        , "GeistMono NF UltraBlack 17"
                         ]
-                        
-    -- Colors and Position (Kept as requested)
+
     , bgColor = "#282C34"
     , fgColor = "#BBC2CF"
     , position = Static { xpos = 0 , ypos = 0, width = 1920, height = 30 }
@@ -17,32 +21,29 @@ Config {
     , hideOnStart = False
     , allDesktops = True
     , persistent = True
-    , alpha    = 255
+    , alpha = 255
     , iconRoot = "$HOME/.xmonad/xpm/"
-    
-    -- Commands
-    , commands = [
-        -- Time monitor: Uses <fn=1> (MesloLGS NF) for the clock icon (U+F017)
-        -- NOTE: Using the MesloLGS NF font (fn=1) for the icon is more reliable than an emoji (🕰️).
-        Run Date "<fn=1>🕰️ </fn>%I:%M:%S %p |" "time" 10,
-        
-        -- Date monitor with action: Uses <fn=1> (MesloLGS NF) for the calendar icon (U+F073)
-        Run Date "<action=`eu.betterbird.Betterbird -calendar` button=1><fn=1>🗓️</fn> %A, %B %d</action>" "date" 100, -- Reduced update rate for date
-        
-        -- MyButton definition (Icon path kept as is)
-        Run Com "echo" 
-          ["<action=`~/.config/scripts/shortcut_key_scripts.sh` button=1><icon=/home/j3ll0/.config/xmobar/haskell_20.xpm/></action>"] 
-          "myButton" 
-          36000,
-        Run Com "~/.config/xmobar/hour-color.sh" [] "clockColor" 1,
 
+    , commands = [
+        -- TIME: Far Right, Pink, Cascadia Code
+        Run Date "<fn=1>🕰️ </fn><fn=3>%I:%M:%S %p</fn>" "time" 10,
+
+        -- DATE: Near Left, Purple, GeistMono 17
+        Run Date "<action=`eu.betterbird.Betterbird -calendar` button=1><fn=1>🗓️</fn> <fn=4>%A, %B %d |</fn></action>" "date" 100,
+
+        -- HASKELL BUTTON
+        Run Com "echo"
+          ["<action=~/.config/scripts/shortcut_key_scripts.sh button=1><icon=/home/j3ll0/.config/xmobar/haskell_20.xpm/></action>"]
+          "myButton"
+          36000,
+
+        Run Com "~/.config/xmobar/hour-color.sh" [] "clockColor" 1,
         Run UnsafeStdinReader
         ]
-        
-    -- Template
+
     , sepChar = "%"
     , alignSep = "}{"
-    -- Template structure: |<time> <workspace/window>}{<date>
-    , template = "%myButton%|<box type=Bottom width=2 mb=2 color=#FF80BF><fc=#FF80BF>%time%</fc></box> %UnsafeStdinReader%}{<box type=Bottom width=2 mb=2 color=#9580FF><fc=#9580FF>%date%</fc></box> "
 
-  }
+    -- TEMPLATE: [BUTTON] [DATE] [WORKSPACES] }{ [TIME]
+    , template = "%myButton% <box type=Bottom width=2 mb=2 color=#9580FF><fc=#9580FF>%date%</fc></box> %UnsafeStdinReader%}{<box type=Bottom width=2 mb=2 color=#FF80BF><fc=#FF80BF>%time%</fc></box> "
+}
