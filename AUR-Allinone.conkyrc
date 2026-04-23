@@ -111,7 +111,7 @@ ${color2}Network ${color3}${hr}
 ${color9}Total Down: ${totaldown enp4s0} ${alignr}${color6}Total Up: ${totalup enp4s0}
 ${color9}${downspeedgraph enp4s0 50,170 01BAB4 004444} ${alignr}${color6}${upspeedgraph enp4s0 50,170 AA0000 440000}
 ${color9}Download: ${downspeed enp4s0}${alignr}${color6}Upload: ${upspeed enp4s0}
-
-# ⏱️ Uptime
-${font Space Age:size=15}${color2}Uptime: ${color3}${alignr}${uptime}
+# ⚡ Power & Uptime
+${voffset 10}${font Space Age:size=15}${color2}MODE: ${color ${env ACCENT}}${alignr}${execi 5 powerprofilesctl get | tr '[:lower:]' '[:upper:]'}
+${font Space Age:size=15}${color2}UPTIME: ${color3}${alignr}${uptime}
 ]]

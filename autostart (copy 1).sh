@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 # ================================================
 # XMonad Autostart - Xmobar (Top) + Polybar (Bottom)
+# Fixed timing for reliable boot
 # ================================================
 
 echo "=== XMonad Autostart Started at $(date) ==="
+
 
 # Give XMonad time to fully initialize
 sleep 4
@@ -16,24 +18,25 @@ echo "Setting up monitors..."
 sleep 2.5
 
 # ================================================
-# 🔑 GNOME Keyring (After Seahorse fix)
+# 🔑 GNOME Keyring (Best version for NixOS)
 # ================================================
 echo "Starting GNOME Keyring..."
 
+# Kill any existing instances first
 pkill -x gnome-keyring-daemon 2>/dev/null || true
 sleep 0.5
 
+# Start the daemon
 eval "$(/run/current-system/sw/bin/gnome-keyring-daemon --start --components=secrets,ssh,pkcs11 2>/dev/null)"
 
+# Try to automatically unlock the "Login" keyring
 dbus-send --session --dest=org.gnome.keyring --type=method_call \
           /org/gnome/keyring/daemon org.gnome.keyring.Daemon.Unlock \
           string:"Login" 2>/dev/null || true
 
-echo "GNOME Keyring started."
+echo "GNOME Keyring started and unlock attempted."
 
-# ================================================
-# Helper function (VERY IMPORTANT - was missing)
-# ================================================
+# Helper
 run() {
     if ! pgrep -x "$(basename "$1")" >/dev/null 2>&1; then
         "$@" &
@@ -53,7 +56,7 @@ run ~/.config/scripts/wallpaper.sh
 
 run nm-tray
 run volumeicon
-run blueman-applet
+run blueberry-tray
 run flameshot
 run dunst -conf ~/.config/dunst/dunstrc
 run redshift -P -l 43.8:-79.3 -O 4000
@@ -62,25 +65,8 @@ run redshift -P -l 43.8:-79.3 -O 4000
 conky -c ~/.config/xmonad/scripts/system-overview.conkyrc &
 (sleep 3 && conky -c ~/.config/xmonad/scripts/AUR-Allinone.conkyrc &) &
 
-# ================================================
-# 📊 BARS: Xmobar (Top) + Polybar (Bottom)
-# ================================================
-echo "Starting bars..."
-
-# Xmobar on Top
 (
-    sleep 6
-    echo "Launching Xmobar on HDMI-2 (Left - screen 0)"
-    xmobar -x 0 ~/.config/xmobar/xmobarrc &
-
-    sleep 1.5
-    echo "Launching Xmobar on HDMI-1 (Right - screen 1)"
-    xmobar -x 1 ~/.config/xmobar/xmobarrc &
-) &
-
-# Polybar on Bottom
-(
-    sleep 7
+    sleep 3
     echo "Launching Polybar (bottom)..."
     ~/.config/polybar/launch.sh &
 ) &

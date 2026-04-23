@@ -48,9 +48,14 @@ conky.config = {
 };
 
 conky.text = [[
-${font Orbitron:Black:size=10}${color7}Numpad *${color}${alignr}${color7}Xmonad Keyhints${color}
+${font Orbitron:Black:size=10}${color7}Numpad *${color}${alignr}${color4}Xmonad Keyhints${color}
+${color7}Keypad Subtract${color}${alignr}${color4}Toggle Conky${color}
+${color7}Keypad Enter${color}${alignr}${color4}Move Window To Next Monitor${color}
 ${color2}${hr}${color}
-${color7}Keypad Enter${color}${alignr}${color4}TOGGLE CONKY${color}
+${color5}F6${color}${alignr}${color5}Monitor Off${color}
+${color5}F9${color}${alignr}${color5}Monitor Warmth${color}
+${color5}F10${color}${alignr}${color5}Show / Hide Polybar${color}
+${color5}F11${color}${alignr}${color5}Full Screen Toggle${color}
 ${color2}${hr}${color}
 ${color7}(S) + SHIFT + R${color}${alignr}${color2}RECOMPILE${color}
 ${color7}Numpad + ${color}${alignr}${color2}Change Wallpaper${color}
@@ -62,7 +67,9 @@ ${color7}Keypad Calculator${color}${alignr}${color2}Calculator${color}
 ${color7}Keypad Camera${color}${alignr}${color2}Flameshot Screenshot${color}
 ${color7}(S) + B${color}${alignr}${color2}Betterbird E-Mail${color}
 ${color7}(S) + C${color}${alignr}${color2}Code${color}
-${color7}(S) + R${color}${alignr}${color2}R-Clone Browser (CLOUD STORAGE)${color}
+${color2}${hr}${color}
+${color7}(S) + R${color}${alignr}${color2}Mount / UnMount / Open OneDrive${color}
+${color7}(S) + CTRL + R${color}${alignr}${color2}R-Clone Browser (CLOUD STORAGE)${color}
 ${color2}${hr}${color}
 ${color7}CTRL + Space / (S) + Numpad .${color}${alignr}${color7}Switch Screen Layout${color}
 ${color5}Numpad .${color}${alignr}${color5}Reset Stack${color}
@@ -73,17 +80,23 @@ ${color4}SHIFT + Keypad Divide${color}${alignr}${color4}Decrease Window Gaps${co
 ${color4}(S) + Keypad Divide${color}${alignr}${color4}Reset Window Gaps${color}
 ${color4}SHIFT + CTRL + Left / Right${color}${alignr}${color4}Shrink / Expand Split${color}
 ${color4}(S) + CTRL + Left / Right${color}${alignr}${color4}Add / Remove Master${color}
-${color4}CTRL + ALT + Left / Right${color}${alignr}${color4}Switch Workspace${color}
-${color4}(S) + TAB${color}${alignr}${color4}Forward Workspace${color}
-${color4}(S) + SHIFT + TAB${color}${alignr}${color4}Backward Workspace${color}
+${color4}ALT + TAB${color}${alignr}${color4}Switch Workspace${color}
 ${color2}${hr}${color}
-${color8}(S) + D${color}${alignr}${color2}D-Menu${color}
-${color8}ALT + SPACE${color}${alignr}${color2}ROFI (B)${color}
-${color8}(S) + SPACE${color}${alignr}${color2}ROFI (S)${color}
-${color8}CTRL + ALT + R${color}${alignr}${color2}ROFI Theme${color}
-${color8}(S) + S${color}${alignr}${color2}D-Menu Web-Search${color}
-${color8}Numpad -${color}${alignr}${color2}Xmonad D-Menu${color}
-${color8}(S) + Numpad -${color}${alignr}${color2}NixOS Maintenance${color}
+${color8}(S) + D${color}${alignr}${color8}D-Menu${color}
+${color8}ALT + SPACE${color}${alignr}${color8}ROFI (B)${color}
+${color8}(S) + SPACE${color}${alignr}${color8}ROFI (S)${color}
+${color8}CTRL + ALT + R${color}${alignr}${color8}ROFI Theme${color}
+${color8}(S) + S${color}${alignr}${color8}D-Menu Web-Search${color}
+${color8}(S) + Numpad -${color}${alignr}${color8}NixOS Maintenance${color}
+${color2}${hr}${color}
+${color7}(S) + RETURN${color}${alignr}${color7}Kitty (SCRATCHPAD)${color}
+${color7}(S) + Escape${color}${alignr}${color7}Mission Center (SCRATCHPAD)${color}
+${color7}(S) + E${color}${alignr}${color7}Thunar (SCRATCHPAD)${color}
+${color7}(S) + O${color}${alignr}${color7}One Note (SCRATCHPAD)${color}
+${color7}(S) + T${color}${alignr}${color7}qBittorrent (SCRATCHPAD)${color}
+${color7}(S) + V${color}${alignr}${color7}QEMU Virt-Manager (SCRATCHPAD)${color}
+${color7}(S) + W${color}${alignr}${color7}Vivaldi Browser (SCRATCHPAD)${color}
+${color7}(S) + SHIFT + W${color}${alignr}${color7}Microsoft Edge (SCRATCHPAD)${color}
 ${color2}${hr}${color}
 ${color5}i | r | Esc${color}${alignr}${color2}Insert | Replace | Escape${color}
 ${color5}:w | :wq | :q!${color}${alignr}${color2}Write | Write/Quit | Quit NO Write${color}
@@ -101,17 +114,4 @@ ${color5}: Number ${color}${alignr}${color2}Jump To Line #${color}
 
 ${color5}gg / G ${color}${alignr}${color2}Jump to Top / Bottom of file${color}
 ${color2}${hr}${color}
-${color7}(S) + RETURN${color}${alignr}${color2}Kitty (SCRATCHPAD)${color}
-${color7}(S) + Escape${color}${alignr}${color2}Mission Center (SCRATCHPAD)${color}
-${color7}(S) + E${color}${alignr}${color2}Thunar (SCRATCHPAD)${color}
-${color7}(S) + O${color}${alignr}${color2}One Note (SCRATCHPAD)${color}
-${color7}(S) + T${color}${alignr}${color2}qBittorrent (SCRATCHPAD)${color}
-${color7}(S) + V${color}${alignr}${color2}QEMU Virt-Manager (SCRATCHPAD)${color}
-${color7}(S) + W${color}${alignr}${color2}Vivaldi Browser (SCRATCHPAD)${color}
-${color7}(S) + SHIFT + W${color}${alignr}${color2}Microsoft Edge (SCRATCHPAD)${color}
-${color2}${hr}${color}
-${color5}F6${color}${alignr}${color5}Monitor Off${color}
-${color5}F9${color}${alignr}${color5}Monitor Warmth${color}
-${color5}F10${color}${alignr}${color5}Show / Hide Polybar${color}
-${color5}F11${color}${alignr}${color5}Full Screen Toggle${color}
 ]]
