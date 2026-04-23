@@ -59,6 +59,11 @@
     };
 
     # ---------------------
+    # 🔵 BLUETOOTH
+    # ---------------------
+    blueman.enable = true;
+
+    # ---------------------
     # 🔑 SECRETS / KEYRING
     # ---------------------
     gnome.gnome-keyring.enable = true;
@@ -89,15 +94,26 @@
   };
 
   # =====================================================
-  # ⚙️ KERNEL / POWER
+  # ⚙️ HARDWARE / KERNEL / POWER
   # =====================================================
+  hardware.bluetooth = {
+    enable = true;
+    powerOnBoot = true;
+    settings = {
+      General = {
+        Enable = "Source,Sink,Media,Socket";
+        Experimental = true;
+      };
+    };
+  };
+
   boot.kernelParams = [ "intel_pstate=active" ];
   powerManagement.cpuFreqGovernor = "schedutil";
   security.rtkit.enable = true;
 
   # Clean /tmp on boot
   systemd.tmpfiles.rules = [
-  "d /tmp 1777 root root 0d"
+    "d /tmp 1777 root root 0d"
   ];
 
   systemd.services.NetworkManager-wait-online.enable = false;
@@ -122,19 +138,22 @@
     };
   };
 
-  # Move selected services to E-cores
-  systemd.services.earlyoom.serviceConfig = {
-    Slice = "ecore.slice";
-    Nice = 10;
-  };
-  systemd.services.smartd.serviceConfig = {
-    Slice = "ecore.slice";
-    Nice = 10;
-  };
-  systemd.services.fwupd.serviceConfig = {
-    Slice = "ecore.slice";
-    Nice = 10;
-  };
+  # Move background services to E-cores
+  systemd.services.earlyoom.serviceConfig.Slice = "ecore.slice";
+  systemd.services.earlyoom.serviceConfig.Nice = 10;
+  
+  systemd.services.smartd.serviceConfig.Slice = "ecore.slice";
+  systemd.services.smartd.serviceConfig.Nice = 10;
+  
+  systemd.services.fwupd.serviceConfig.Slice = "ecore.slice";
+  systemd.services.fwupd.serviceConfig.Nice = 10;
+
+  # Also move Bluetooth daemon and Blueman mechanism to E-cores
+  systemd.services.bluetooth.serviceConfig.Slice = "ecore.slice";
+  systemd.services.bluetooth.serviceConfig.Nice = 10;
+  
+  systemd.services.blueman-mechanism.serviceConfig.Slice = "ecore.slice";
+  systemd.services.blueman-mechanism.serviceConfig.Nice = 10;
 
   # =====================================================
   # 🧠 NVMe THERMAL MONITOR
@@ -192,5 +211,7 @@
     nvme-cli
     (linuxPackages.cpupower or pkgs.cpupower)
     cifs-utils
+    bluez
+    bluez-tools
   ];
 }
